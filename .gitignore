@@ -2,34 +2,29 @@
 node_modules/
 **/node_modules/
 
-# Environment variables
+# Build & Dist outputs
+dist/
+**/dist/
+build/
+**/build/
+.next/
+
+# Environment files
 .env
 .env.local
-.env.*.local
-**/.env
+.env.*
 
-# Build outputs
-dist/
-build/
-.next/
-**/dist/
-**/build/
-
-# Database files & SQLite logs
+# SQLite & Databases
 *.db
 *.db-journal
 backend/prisma/*.db
 backend/prisma/*.db-journal
 
-# Logs
+# Logs & Temporary files
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-logs/
-*.log
-
-# OS & IDE metadata
 .DS_Store
-Thumbs.db
 .vscode/
 .idea/
