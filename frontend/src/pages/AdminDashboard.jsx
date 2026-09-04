@@ -66,7 +66,7 @@ export default function AdminDashboard() {
   const [selectedTeacherId, setSelectedTeacherId] = useState('');
   const [allocationRoleType, setAllocationRoleType] = useState('CLASS_TEACHER');
 
-  // Attendance Records & Student Analytics State
+  // Attendance by student State
   const [attClassId, setAttClassId] = useState('');
   const [attSectionId, setAttSectionId] = useState('');
   const [selectedStudentForAttendance, setSelectedStudentForAttendance] = useState(null);
@@ -156,7 +156,7 @@ export default function AdminDashboard() {
         alert(
           editingStudentId
             ? 'Student profile updated successfully!'
-            : `New student admitted successfully!\n\nStudent Login ID: ${generatedCode}\nLogin Password (DOB): ${data.loginCredentials?.passwordDOB || 'DD/MM/YYYY'}`
+            : `Student admitted.\n\nStudent ID: ${generatedCode}\nFirst password: their date of birth, ${data.loginCredentials?.passwordDOB || 'DD/MM/YYYY'}`
         );
         resetStudentForm();
         loadData();
@@ -243,7 +243,7 @@ export default function AdminDashboard() {
         alert(
           editingStaffId
             ? 'Staff member profile & credentials updated successfully!'
-            : `New staff member onboarded successfully!\nLogin Email: ${stfEmail}\nLogin Password: ${stfPassword || 'password123'}`
+            : `Staff member added.\n\nEmail: ${stfEmail}\nGive them the password you just set — it is not shown again.`
         );
         resetStaffForm();
         loadData();
@@ -452,7 +452,7 @@ export default function AdminDashboard() {
   const availableSections = academicClasses.find((c) => c.id === selectedClassId)?.sections || [];
 
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-paper flex flex-col font-sans">
       <Header userRole="ADMIN" userName={currentUser?.fullName || 'School Administrator'} />
 
       <div className="flex flex-1">
@@ -462,40 +462,40 @@ export default function AdminDashboard() {
           {/* DASHBOARD TAB */}
           {activeTab === 'overview' && (
             <div className="space-y-6">
-              <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+              <div className="bg-sheet p-6 border border-rule space-y-4">
+                <div className="flex justify-between items-center border-b border-rule-soft pb-3">
                   <div>
-                    <h2 className="text-lg font-bold text-[#0b192c] flex items-center space-x-2">
-                      <CreditCard className="w-5 h-5 text-[#0d9488]" />
-                      <span>Latest Received Invoices & Fee Payment Feed</span>
+                    <h2 className="text-[0.9375rem] font-semibold text-ink flex items-center space-x-2">
+                      <CreditCard className="w-5 h-5 text-copy" />
+                      <span>Recent fee payments</span>
                     </h2>
-                    <p className="text-xs text-slate-500">Live operational updates regarding fee receipts and transactions</p>
+                    <p className="text-xs text-ink-soft">The most recent invoices and where each one stands.</p>
                   </div>
                   <button
                     onClick={loadData}
-                    className="bg-[#0b192c] hover:bg-[#1e3e62] text-white px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer"
+                    className="bg-ink hover:bg-copy-deep text-white px-3.5 py-1.5 text-xs font-medium transition-all cursor-pointer"
                   >
-                    Refresh Feed
+                    Refresh
                   </button>
                 </div>
 
-                <div className="table-responsive">
-                  <table className="w-full text-left text-sm border-collapse">
+                <div className="register-scroll">
+                  <table className="register">
                     <thead>
-                      <tr className="bg-[#0b192c] text-white text-xs uppercase tracking-wider">
-                        <th className="p-3.5 rounded-l-xl">Invoice No</th>
-                        <th className="p-3.5">Student Name (Code)</th>
-                        <th className="p-3.5">Category</th>
-                        <th className="p-3.5">Total Amount</th>
-                        <th className="p-3.5">Paid Amount</th>
-                        <th className="p-3.5">Tx Ref ID</th>
-                        <th className="p-3.5 rounded-r-xl">Status</th>
+                      <tr>
+                        <th>Invoice No</th>
+                        <th>Student Name (Code)</th>
+                        <th>Category</th>
+                        <th>Total Amount</th>
+                        <th>Paid Amount</th>
+                        <th>Tx Ref ID</th>
+                        <th>Status</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
+                    <tbody className="divide-y divide-rule-soft font-medium text-ink">
                       {invoices.length === 0 ? (
                         <tr>
-                          <td colSpan={7} className="p-8 text-center text-slate-400 text-xs">
+                          <td colSpan={7} className="p-8 text-center text-ink-faint text-xs">
                             No recent invoices issued or received.
                           </td>
                         </tr>
@@ -503,31 +503,31 @@ export default function AdminDashboard() {
                         invoices.slice(0, 10).map((inv) => {
                           const tx = inv.payments?.[0]?.transactionNumber || 'N/A';
                           return (
-                            <tr key={inv.id} className="hover:bg-slate-50">
-                              <td className="p-3.5 font-mono text-xs font-bold text-[#0d9488]">{inv.invoiceNumber}</td>
-                              <td className="p-3.5">
-                                <div className="font-bold text-[#0b192c]">{inv.student?.profile?.fullName || 'Student'}</div>
-                                <div className="text-[10px] text-slate-500 font-mono">{inv.student?.studentCode}</div>
+                            <tr key={inv.id} className="hover:bg-manila/25">
+                              <td className="font-mono text-xs font-medium text-copy">{inv.invoiceNumber}</td>
+                              <td>
+                                <div className="font-medium text-ink">{inv.student?.profile?.fullName || 'Student'}</div>
+                                <div className="text-[10px] text-ink-soft font-mono">{inv.student?.studentCode}</div>
                               </td>
-                              <td className="p-3.5 text-xs text-slate-600">{inv.feeCategory}</td>
-                              <td className="p-3.5 text-xs font-bold text-slate-900">
+                              <td className="text-xs text-ink-soft">{inv.feeCategory}</td>
+                              <td className="text-xs font-medium text-ink">
                                 Rs. {inv.totalAmount.toLocaleString('en-IN')}
                               </td>
-                              <td className="p-3.5 text-xs font-bold text-[#0d9488]">
+                              <td className="text-xs font-medium text-copy">
                                 Rs. {inv.paidAmount.toLocaleString('en-IN')}
                               </td>
-                              <td className="p-3.5 font-mono text-xs text-slate-500">{tx}</td>
-                              <td className="p-3.5">
+                              <td className="font-mono text-xs text-ink-soft">{tx}</td>
+                              <td>
                                 <span
-                                  className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase ${
+                                  className={`mark ${
                                     inv.status === 'PAID'
-                                      ? 'bg-teal-100 text-teal-800'
+                                      ? 'bg-paid-wash text-paid'
                                       : inv.status === 'PARTIALLY_PAID'
-                                      ? 'bg-amber-100 text-amber-800'
-                                      : 'bg-rose-100 text-rose-800'
+                                      ? 'bg-hold-wash text-hold'
+                                      : 'bg-due-wash text-due'
                                   }`}
                                 >
-                                  {inv.status}
+                                  {String(inv.status).replace(/_/g, " ")}
                                 </span>
                               </td>
                             </tr>
@@ -543,21 +543,21 @@ export default function AdminDashboard() {
 
           {/* STUDENT ADMISSIONS TAB */}
           {activeTab === 'students' && (
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
-              <div className="flex justify-between items-center border-b border-slate-100 pb-4">
+            <div className="bg-sheet p-6 border border-rule space-y-6">
+              <div className="flex justify-between items-center border-b border-rule-soft pb-4">
                 <div>
-                  <h2 className="text-lg font-bold text-[#0b192c] flex items-center space-x-2">
-                    <UserPlus className="w-5 h-5 text-[#0d9488]" />
-                    <span>Student Admissions Portal</span>
+                  <h2 className="text-[0.9375rem] font-semibold text-ink flex items-center space-x-2">
+                    <UserPlus className="w-5 h-5 text-copy" />
+                    <span>Admit a student</span>
                   </h2>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-ink-soft">
                     Admit students with DOB. Student login credentials are automatically set to: <strong>Student ID</strong> & <strong>DOB (DD/MM/YYYY)</strong>.
                   </p>
                 </div>
                 {editingStudentId && (
                   <button
                     onClick={resetStudentForm}
-                    className="bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-bold px-3 py-1.5 rounded-lg"
+                    className="bg-manila/50 hover:bg-manila text-ink text-xs font-medium px-3 py-1.5"
                   >
                     Cancel Editing
                   </button>
@@ -565,109 +565,109 @@ export default function AdminDashboard() {
               </div>
 
               {/* Form Container */}
-              <form onSubmit={handleSaveStudent} className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-4">
-                <div className="flex items-center space-x-2 text-xs text-teal-900 bg-teal-50 border border-teal-200 p-3 rounded-xl font-medium">
-                  <Info className="w-4 h-4 text-[#0d9488] shrink-0" />
+              <form onSubmit={handleSaveStudent} className="bg-paper p-5 border border-rule space-y-4">
+                <div className="flex items-center space-x-2 text-xs text-teal-900 bg-copy-wash border border-copy/25 p-3 font-medium">
+                  <Info className="w-4 h-4 text-copy shrink-0" />
                   <span>
                     <strong>Student Login Notice:</strong> Students log in using their <strong>Student Code / ID</strong> (e.g. <code>STU_1001</code>) and password set as their <strong>DOB</strong> in <code>DD/MM/YYYY</code> format. No email required!
                   </span>
                 </div>
 
-                <h3 className="text-xs font-bold text-[#0b192c] uppercase tracking-wider">
+                <h3 className="text-xs font-medium text-ink uppercase tracking-wider">
                   {editingStudentId ? 'Edit Student Details' : 'New Student Admission Entry'}
                 </h3>
 
                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Student Full Name *</label>
+                    <label className="block text-xs font-medium text-ink mb-1">Student Full Name *</label>
                     <input
                       type="text"
                       required
                       value={stuName}
                       onChange={(e) => setStuName(e.target.value)}
                       placeholder="e.g. Rahul Sharma"
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-[#0d9488] focus:outline-none"
+                      className="w-full px-3 py-2 border border-rule text-xs focus:ring-2 focus:ring-copy focus:outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Date of Birth (DOB) *</label>
+                    <label className="block text-xs font-medium text-ink mb-1">Date of Birth (DOB) *</label>
                     <input
                       type="date"
                       required
                       value={stuDob}
                       onChange={(e) => setStuDob(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-[#0d9488] focus:outline-none"
+                      className="w-full px-3 py-2 border border-rule text-xs focus:ring-2 focus:ring-copy focus:outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Roll No *</label>
+                    <label className="block text-xs font-medium text-ink mb-1">Roll No *</label>
                     <input
                       type="text"
                       required
                       value={stuRoll}
                       onChange={(e) => setStuRoll(e.target.value)}
                       placeholder="e.g. 101"
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-[#0d9488] focus:outline-none"
+                      className="w-full px-3 py-2 border border-rule text-xs focus:ring-2 focus:ring-copy focus:outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Student Code / ID</label>
+                    <label className="block text-xs font-medium text-ink mb-1">Student Code / ID</label>
                     <input
                       type="text"
                       value={stuCode}
                       onChange={(e) => setStuCode(e.target.value)}
                       placeholder="Auto-generated (e.g. STU_1001)"
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-[#0d9488] focus:outline-none font-mono"
+                      className="w-full px-3 py-2 border border-rule text-xs focus:ring-2 focus:ring-copy focus:outline-none font-mono"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Parent / Guardian Name</label>
+                    <label className="block text-xs font-medium text-ink mb-1">Parent / Guardian Name</label>
                     <input
                       type="text"
                       value={stuParentName}
                       onChange={(e) => setStuParentName(e.target.value)}
                       placeholder="e.g. Suresh Sharma"
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-[#0d9488] focus:outline-none"
+                      className="w-full px-3 py-2 border border-rule text-xs focus:ring-2 focus:ring-copy focus:outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Parent Mobile Number</label>
+                    <label className="block text-xs font-medium text-ink mb-1">Parent Mobile Number</label>
                     <input
                       type="tel"
                       value={stuParentPhone}
                       onChange={(e) => setStuParentPhone(e.target.value)}
                       placeholder="e.g. +91 98765 43210"
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-[#0d9488] focus:outline-none"
+                      className="w-full px-3 py-2 border border-rule text-xs focus:ring-2 focus:ring-copy focus:outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Aadhar Number</label>
+                    <label className="block text-xs font-medium text-ink mb-1">Aadhar Number</label>
                     <input
                       type="text"
                       value={stuAadhar}
                       onChange={(e) => setStuAadhar(e.target.value)}
                       placeholder="e.g. 1234-5678-9012"
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-[#0d9488] focus:outline-none"
+                      className="w-full px-3 py-2 border border-rule text-xs focus:ring-2 focus:ring-copy focus:outline-none"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Class Selection *</label>
+                    <label className="block text-xs font-medium text-ink mb-1">Class Selection *</label>
                     <select
                       required
                       value={stuClassId}
                       onChange={(e) => setStuClassId(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-[#0d9488] focus:outline-none cursor-pointer"
+                      className="w-full px-3 py-2 border border-rule text-xs focus:ring-2 focus:ring-copy focus:outline-none cursor-pointer"
                     >
                       <option value="">-- Select Class --</option>
                       {academicClasses.map((c) => (
@@ -677,12 +677,12 @@ export default function AdminDashboard() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Section Selection *</label>
+                    <label className="block text-xs font-medium text-ink mb-1">Section Selection *</label>
                     <select
                       required
                       value={stuSectionId}
                       onChange={(e) => setStuSectionId(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-[#0d9488] focus:outline-none cursor-pointer"
+                      className="w-full px-3 py-2 border border-rule text-xs focus:ring-2 focus:ring-copy focus:outline-none cursor-pointer"
                     >
                       <option value="">-- Select Section --</option>
                       {(academicClasses.find((c) => c.id === stuClassId)?.sections || [
@@ -697,7 +697,7 @@ export default function AdminDashboard() {
 
                 <button
                   type="submit"
-                  className="bg-[#0d9488] hover:bg-[#0f766e] text-white font-bold px-5 py-2.5 rounded-xl text-xs shadow-md transition-all cursor-pointer"
+                  className="bg-copy hover:bg-copy-deep text-white font-medium px-5 py-2.5 text-xs transition-all cursor-pointer"
                 >
                   {editingStudentId ? 'Update Student Profile' : 'Admit Student & Generate Credentials'}
                 </button>
@@ -706,58 +706,58 @@ export default function AdminDashboard() {
               {/* Roster Table */}
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-xs font-bold text-[#0b192c] uppercase tracking-wider">Admitted Students Directory</h3>
+                  <h3 className="text-xs font-medium text-ink uppercase tracking-wider">Admitted Students Directory</h3>
                   <div className="relative w-64">
-                    <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                    <Search className="w-4 h-4 text-ink-faint absolute left-3 top-2.5" />
                     <input
                       type="text"
                       placeholder="Search student code or name..."
                       value={studentSearch}
                       onChange={(e) => setStudentSearch(e.target.value)}
-                      className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-slate-50 border border-slate-300 text-xs"
+                      className="w-full pl-9 pr-3 py-1.5 bg-paper border border-rule text-xs"
                     />
                   </div>
                 </div>
 
-                <div className="table-responsive">
-                  <table className="w-full text-left text-sm border-collapse">
+                <div className="register-scroll">
+                  <table className="register">
                     <thead>
-                      <tr className="bg-[#0b192c] text-white text-xs uppercase tracking-wider">
-                        <th className="p-3.5 rounded-l-xl">Student Login ID</th>
-                        <th className="p-3.5">Name</th>
-                        <th className="p-3.5">DOB (Login Password)</th>
-                        <th className="p-3.5">Roll No</th>
-                        <th className="p-3.5">Class & Section</th>
-                        <th className="p-3.5">Parent Contact</th>
-                        <th className="p-3.5 text-right rounded-r-xl">Actions</th>
+                      <tr>
+                        <th>Student Login ID</th>
+                        <th>Name</th>
+                        <th>Date of birth</th>
+                        <th>Roll No</th>
+                        <th>Class & Section</th>
+                        <th>Parent Contact</th>
+                        <th className="num">Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
+                    <tbody className="divide-y divide-rule-soft font-medium text-ink">
                       {filteredStudents.map((st) => {
                         const dobFormatted = st.dob ? new Date(st.dob).toLocaleDateString('en-GB') : '15/08/2010';
                         return (
-                          <tr key={st.id} className="hover:bg-slate-50">
-                            <td className="p-3.5 font-mono text-xs font-bold text-[#0d9488]">{st.studentCode}</td>
-                            <td className="p-3.5 font-bold text-[#0b192c]">{st.profile?.fullName}</td>
-                            <td className="p-3.5 font-mono text-xs font-bold text-slate-700">{dobFormatted}</td>
-                            <td className="p-3.5 text-xs text-slate-600">{st.rollNumber}</td>
-                            <td className="p-3.5 text-xs font-semibold text-slate-700">
+                          <tr key={st.id} className="hover:bg-manila/25">
+                            <td className="font-mono text-xs font-medium text-copy">{st.studentCode}</td>
+                            <td className="font-medium text-ink">{st.profile?.fullName}</td>
+                            <td className="font-mono text-xs font-medium text-ink">{dobFormatted}</td>
+                            <td className="text-xs text-ink-soft">{st.rollNumber}</td>
+                            <td className="text-xs font-semibold text-ink">
                               {st.enrollments?.[0]?.class?.name || 'Class 10'}-{st.enrollments?.[0]?.section?.name || 'A'}
                             </td>
-                            <td className="p-3.5 text-xs text-slate-600">
+                            <td className="text-xs text-ink-soft">
                               {st.parents?.[0]?.parent?.fullName || 'Parent'} ({st.parents?.[0]?.parent?.phone || st.profile?.phone || 'N/A'})
                             </td>
-                            <td className="p-3.5 text-right">
+                            <td className="text-right">
                               <div className="flex items-center justify-end space-x-2">
                                 <button
                                   onClick={() => handleEditStudent(st)}
-                                  className="bg-teal-50 hover:bg-teal-100 text-[#0d9488] px-2.5 py-1 rounded-lg text-xs font-bold cursor-pointer"
+                                  className="bg-copy-wash hover:bg-copy-wash text-copy px-2.5 py-1 text-xs font-medium cursor-pointer"
                                 >
                                   <Edit2 className="w-3.5 h-3.5 inline mr-1" /> Edit
                                 </button>
                                 <button
                                   onClick={() => handleDeleteStudent(st.id)}
-                                  className="bg-rose-50 hover:bg-rose-100 text-rose-600 px-2.5 py-1 rounded-lg text-xs font-bold cursor-pointer"
+                                  className="bg-due-wash hover:bg-due-wash text-due px-2.5 py-1 text-xs font-medium cursor-pointer"
                                 >
                                   <Trash2 className="w-3.5 h-3.5 inline mr-1" /> Delete
                                 </button>
@@ -775,21 +775,21 @@ export default function AdminDashboard() {
 
           {/* STAFF MANAGEMENT TAB */}
           {activeTab === 'staff' && (
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
-              <div className="flex justify-between items-center border-b border-slate-100 pb-4">
+            <div className="bg-sheet p-6 border border-rule space-y-6">
+              <div className="flex justify-between items-center border-b border-rule-soft pb-4">
                 <div>
-                  <h2 className="text-lg font-bold text-[#0b192c] flex items-center space-x-2">
-                    <UserCheck className="w-5 h-5 text-[#0d9488]" />
+                  <h2 className="text-[0.9375rem] font-semibold text-ink flex items-center space-x-2">
+                    <UserCheck className="w-5 h-5 text-copy" />
                     <span>Staff Management</span>
                   </h2>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-ink-soft">
                     Add new staff members with login credentials (Email & Password), edit details, or delete staff profiles.
                   </p>
                 </div>
                 {editingStaffId && (
                   <button
                     onClick={resetStaffForm}
-                    className="bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-bold px-3 py-1.5 rounded-lg"
+                    className="bg-manila/50 hover:bg-manila text-ink text-xs font-medium px-3 py-1.5"
                   >
                     Cancel Editing
                   </button>
@@ -797,42 +797,42 @@ export default function AdminDashboard() {
               </div>
 
               {/* Staff Form */}
-              <form onSubmit={handleSaveStaff} className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-4">
+              <form onSubmit={handleSaveStaff} className="bg-paper p-5 border border-rule space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-bold text-[#0b192c] uppercase tracking-wider flex items-center space-x-1.5">
-                    <Key className="w-4 h-4 text-[#0d9488]" />
+                  <h3 className="text-xs font-medium text-ink uppercase tracking-wider flex items-center space-x-1.5">
+                    <Key className="w-4 h-4 text-copy" />
                     <span>{editingStaffId ? 'Edit Staff Profile & Credentials' : 'Add New Staff Member with Login Credentials'}</span>
                   </h3>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Full Name *</label>
+                    <label className="block text-xs font-medium text-ink mb-1">Full Name *</label>
                     <input
                       type="text"
                       required
                       value={stfName}
                       onChange={(e) => setStfName(e.target.value)}
                       placeholder="e.g. Dr. Ramesh Kumar"
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-[#0d9488] focus:outline-none"
+                      className="w-full px-3 py-2 border border-rule text-xs focus:ring-2 focus:ring-copy focus:outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Login Email ID *</label>
+                    <label className="block text-xs font-medium text-ink mb-1">Login Email ID *</label>
                     <input
                       type="email"
                       required
                       value={stfEmail}
                       onChange={(e) => setStfEmail(e.target.value)}
                       placeholder="e.g. ramesh@school.com"
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-[#0d9488] focus:outline-none"
+                      className="w-full px-3 py-2 border border-rule text-xs focus:ring-2 focus:ring-copy focus:outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Login Password * {editingStaffId && '(Leave empty to keep existing)'}
+                    <label className="block text-xs font-medium text-ink mb-1">
+                      Password {editingStaffId ? '(leave empty to keep the current one)' : '*'}
                     </label>
                     <input
                       type="password"
@@ -840,49 +840,49 @@ export default function AdminDashboard() {
                       value={stfPassword}
                       onChange={(e) => setStfPassword(e.target.value)}
                       placeholder={editingStaffId ? 'Leave blank to preserve password' : 'Assign login password'}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-[#0d9488] focus:outline-none font-mono"
+                      className="w-full px-3 py-2 border border-rule text-xs focus:ring-2 focus:ring-copy focus:outline-none font-mono"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Employee ID / Code</label>
+                    <label className="block text-xs font-medium text-ink mb-1">Employee ID / Code</label>
                     <input
                       type="text"
                       value={stfEmpCode}
                       onChange={(e) => setStfEmpCode(e.target.value)}
                       placeholder="Auto-generated if empty"
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-[#0d9488] focus:outline-none font-mono"
+                      className="w-full px-3 py-2 border border-rule text-xs focus:ring-2 focus:ring-copy focus:outline-none font-mono"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Subject</label>
+                    <label className="block text-xs font-medium text-ink mb-1">Subject</label>
                     <input
                       type="text"
                       value={stfSubject}
                       onChange={(e) => setStfSubject(e.target.value)}
                       placeholder="e.g. Physics PGT"
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-[#0d9488] focus:outline-none"
+                      className="w-full px-3 py-2 border border-rule text-xs focus:ring-2 focus:ring-copy focus:outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Designation</label>
+                    <label className="block text-xs font-medium text-ink mb-1">Designation</label>
                     <input
                       type="text"
                       value={stfDesignation}
                       onChange={(e) => setStfDesignation(e.target.value)}
                       placeholder="e.g. Senior Faculty Teacher"
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-[#0d9488] focus:outline-none"
+                      className="w-full px-3 py-2 border border-rule text-xs focus:ring-2 focus:ring-copy focus:outline-none"
                     />
                   </div>
                 </div>
 
                 <button
                   type="submit"
-                  className="bg-[#0d9488] hover:bg-[#0f766e] text-white font-bold px-5 py-2.5 rounded-xl text-xs shadow-md transition-all cursor-pointer flex items-center space-x-2"
+                  className="bg-copy hover:bg-copy-deep text-white font-medium px-5 py-2.5 text-xs transition-all cursor-pointer flex items-center space-x-2"
                 >
                   <UserCheck className="w-4 h-4" />
                   <span>{editingStaffId ? 'Update Staff Account' : 'Create Staff Member with Login Credentials'}</span>
@@ -892,52 +892,52 @@ export default function AdminDashboard() {
               {/* Staff Directory Table */}
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-xs font-bold text-[#0b192c] uppercase tracking-wider">Active Staff Members & Login Accounts</h3>
+                  <h3 className="text-xs font-medium text-ink uppercase tracking-wider">Active Staff Members & Login Accounts</h3>
                   <div className="relative w-64">
-                    <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                    <Search className="w-4 h-4 text-ink-faint absolute left-3 top-2.5" />
                     <input
                       type="text"
                       placeholder="Search staff by name/email/ID..."
                       value={staffSearch}
                       onChange={(e) => setStaffSearch(e.target.value)}
-                      className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-slate-50 border border-slate-300 text-xs"
+                      className="w-full pl-9 pr-3 py-1.5 bg-paper border border-rule text-xs"
                     />
                   </div>
                 </div>
 
-                <div className="table-responsive">
-                  <table className="w-full text-left text-sm border-collapse">
+                <div className="register-scroll">
+                  <table className="register">
                     <thead>
-                      <tr className="bg-[#0b192c] text-white text-xs uppercase tracking-wider">
-                        <th className="p-3.5 rounded-l-xl">Emp Code</th>
-                        <th className="p-3.5">Name</th>
-                        <th className="p-3.5">Staff Login Email</th>
-                        <th className="p-3.5">Designation</th>
-                        <th className="p-3.5">Joining Date</th>
-                        <th className="p-3.5 text-right rounded-r-xl">Actions</th>
+                      <tr>
+                        <th>Emp Code</th>
+                        <th>Name</th>
+                        <th>Staff Login Email</th>
+                        <th>Designation</th>
+                        <th>Joining Date</th>
+                        <th className="num">Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
+                    <tbody className="divide-y divide-rule-soft font-medium text-ink">
                       {filteredStaff.map((stf) => (
-                        <tr key={stf.id} className="hover:bg-slate-50">
-                          <td className="p-3.5 font-mono text-xs font-bold text-[#0d9488]">{stf.employeeCode}</td>
-                          <td className="p-3.5 font-bold text-[#0b192c]">{stf.profile?.fullName}</td>
-                          <td className="p-3.5 text-xs font-mono font-bold text-slate-700">
+                        <tr key={stf.id} className="hover:bg-manila/25">
+                          <td className="font-mono text-xs font-medium text-copy">{stf.employeeCode}</td>
+                          <td className="font-medium text-ink">{stf.profile?.fullName}</td>
+                          <td className="text-xs font-mono font-medium text-ink">
                             {stf.profile?.email}
                           </td>
-                          <td className="p-3.5 text-xs text-slate-700">{stf.designation}</td>
-                          <td className="p-3.5 text-xs text-slate-500">{new Date(stf.joiningDate).toLocaleDateString()}</td>
-                          <td className="p-3.5 text-right">
+                          <td className="text-xs text-ink">{stf.designation}</td>
+                          <td className="text-xs text-ink-soft">{new Date(stf.joiningDate).toLocaleDateString()}</td>
+                          <td className="text-right">
                             <div className="flex items-center justify-end space-x-2">
                               <button
                                 onClick={() => handleEditStaff(stf)}
-                                className="bg-teal-50 hover:bg-teal-100 text-[#0d9488] px-2.5 py-1 rounded-lg text-xs font-bold cursor-pointer"
+                                className="bg-copy-wash hover:bg-copy-wash text-copy px-2.5 py-1 text-xs font-medium cursor-pointer"
                               >
                                 <Edit2 className="w-3.5 h-3.5 inline mr-1" /> Edit
                               </button>
                               <button
                                 onClick={() => handleDeleteStaff(stf.id)}
-                                className="bg-rose-50 hover:bg-rose-100 text-rose-600 px-2.5 py-1 rounded-lg text-xs font-bold cursor-pointer"
+                                className="bg-due-wash hover:bg-due-wash text-due px-2.5 py-1 text-xs font-medium cursor-pointer"
                               >
                                 <Trash2 className="w-3.5 h-3.5 inline mr-1" /> Delete
                               </button>
@@ -954,28 +954,28 @@ export default function AdminDashboard() {
 
           {/* ACADEMIC SETUP TAB */}
           {activeTab === 'academic' && (
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
-              <div className="border-b border-slate-100 pb-4">
-                <h2 className="text-lg font-bold text-[#0b192c] flex items-center space-x-2">
-                  <BookOpen className="w-5 h-5 text-[#0d9488]" />
-                  <span>Academic Setup & Teacher Allocation</span>
+            <div className="bg-sheet p-6 border border-rule space-y-6">
+              <div className="border-b border-rule-soft pb-4">
+                <h2 className="text-[0.9375rem] font-semibold text-ink flex items-center space-x-2">
+                  <BookOpen className="w-5 h-5 text-copy" />
+                  <span>Classes and class teachers</span>
                 </h2>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-ink-soft">
                   Allocate Class Teachers & Subject Teachers and grant 1-click attendance posting permission
                 </p>
               </div>
 
               {/* Allocation Form */}
-              <form onSubmit={handleAssignTeacher} className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-4">
-                <h3 className="text-xs font-bold text-[#0b192c] uppercase tracking-wider">Teacher Allocation & Permission Grant</h3>
+              <form onSubmit={handleAssignTeacher} className="bg-paper p-5 border border-rule space-y-4">
+                <h3 className="text-xs font-medium text-ink uppercase tracking-wider">Teacher Allocation & Permission Grant</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Class *</label>
+                    <label className="block text-xs font-medium text-ink mb-1">Class *</label>
                     <select
                       required
                       value={selectedClassId}
                       onChange={(e) => setSelectedClassId(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-[#0d9488] focus:outline-none cursor-pointer"
+                      className="w-full px-3 py-2 border border-rule text-xs focus:ring-2 focus:ring-copy focus:outline-none cursor-pointer"
                     >
                       <option value="">-- Select Class --</option>
                       {academicClasses.map((c) => (
@@ -985,12 +985,12 @@ export default function AdminDashboard() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Section *</label>
+                    <label className="block text-xs font-medium text-ink mb-1">Section *</label>
                     <select
                       required
                       value={selectedSectionId}
                       onChange={(e) => setSelectedSectionId(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-[#0d9488] focus:outline-none cursor-pointer"
+                      className="w-full px-3 py-2 border border-rule text-xs focus:ring-2 focus:ring-copy focus:outline-none cursor-pointer"
                     >
                       <option value="">-- Select Section --</option>
                       {availableSections.map((sec) => (
@@ -1000,12 +1000,12 @@ export default function AdminDashboard() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Faculty Member *</label>
+                    <label className="block text-xs font-medium text-ink mb-1">Faculty Member *</label>
                     <select
                       required
                       value={selectedTeacherId}
                       onChange={(e) => setSelectedTeacherId(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-[#0d9488] focus:outline-none cursor-pointer"
+                      className="w-full px-3 py-2 border border-rule text-xs focus:ring-2 focus:ring-copy focus:outline-none cursor-pointer"
                     >
                       <option value="">-- Select Teacher --</option>
                       {staffList.map((stf) => (
@@ -1017,11 +1017,11 @@ export default function AdminDashboard() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Role Type</label>
+                    <label className="block text-xs font-medium text-ink mb-1">Role Type</label>
                     <select
                       value={allocationRoleType}
                       onChange={(e) => setAllocationRoleType(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-[#0d9488] focus:outline-none cursor-pointer"
+                      className="w-full px-3 py-2 border border-rule text-xs focus:ring-2 focus:ring-copy focus:outline-none cursor-pointer"
                     >
                       <option value="CLASS_TEACHER">Class Teacher</option>
                       <option value="SUBJECT_TEACHER">Subject Teacher</option>
@@ -1031,7 +1031,7 @@ export default function AdminDashboard() {
 
                 <button
                   type="submit"
-                  className="bg-[#0b192c] hover:bg-[#1e3e62] text-white font-bold px-5 py-2.5 rounded-xl text-xs shadow-md cursor-pointer transition-all"
+                  className="bg-ink hover:bg-copy-deep text-white font-medium px-5 py-2.5 text-xs cursor-pointer transition-all"
                 >
                   Allocate Teacher & Grant Access
                 </button>
@@ -1039,26 +1039,26 @@ export default function AdminDashboard() {
 
               {/* Classes & Teacher Allocations List */}
               <div className="space-y-4">
-                <h3 className="text-xs font-bold text-[#0b192c] uppercase tracking-wider">Current Class Allocations & Attendance Access</h3>
+                <h3 className="text-xs font-medium text-ink uppercase tracking-wider">Current Class Allocations & Attendance Access</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {academicClasses.map((cls) => (
-                    <div key={cls.id} className="p-5 rounded-2xl border border-slate-200 bg-white space-y-3">
-                      <h4 className="font-bold text-[#0b192c] text-base">{cls.name}</h4>
+                    <div key={cls.id} className="p-5 border border-rule bg-sheet space-y-3">
+                      <h4 className="font-medium text-ink text-base">{cls.name}</h4>
                       <div className="space-y-2">
                         {cls.sections.map((sec) => {
                           const assignment = cls.staffAssignments?.find((a) => a.sectionId === sec.id);
                           return (
-                            <div key={sec.id} className="bg-slate-50 p-3 rounded-xl border border-slate-200 flex items-center justify-between text-xs">
+                            <div key={sec.id} className="bg-paper p-3 border border-rule flex items-center justify-between text-xs">
                               <div>
-                                <span className="font-bold text-[#0b192c]">Section {sec.name}</span>
-                                <div className="text-slate-600 mt-0.5">
+                                <span className="font-medium text-ink">Section {sec.name}</span>
+                                <div className="text-ink-soft mt-0.5">
                                   Class Teacher: <strong>{assignment?.staff?.profile?.fullName || 'Not Allocated'}</strong>
                                 </div>
                               </div>
 
                               <button
                                 onClick={() => handleGrantAttendancePermission(assignment?.staffId || staffList[0]?.id, cls.id, sec.id)}
-                                className="bg-teal-50 hover:bg-teal-100 text-[#0d9488] border border-teal-200 px-3 py-1 rounded-lg text-xs font-bold cursor-pointer"
+                                className="bg-copy-wash hover:bg-copy-wash text-copy border border-copy/25 px-3 py-1 text-xs font-medium cursor-pointer"
                               >
                                 Grant Attendance Access
                               </button>
@@ -1075,14 +1075,14 @@ export default function AdminDashboard() {
 
           {/* ATTENDANCE RECORDS TAB - FILTER CLASS & SECTION -> SHOWCASE STUDENT PROFILES -> MONTHLY & START-TILL-DATE STATS */}
           {activeTab === 'attendance' && (
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
-              <div className="border-b border-slate-100 pb-4 flex justify-between items-center">
+            <div className="bg-sheet p-6 border border-rule space-y-6">
+              <div className="border-b border-rule-soft pb-4 flex justify-between items-center">
                 <div>
-                  <h2 className="text-lg font-bold text-[#0b192c] flex items-center space-x-2">
-                    <Calendar className="w-5 h-5 text-[#0d9488]" />
-                    <span>Attendance Records & Student Analytics</span>
+                  <h2 className="text-[0.9375rem] font-semibold text-ink flex items-center space-x-2">
+                    <Calendar className="w-5 h-5 text-copy" />
+                    <span>Attendance by student</span>
                   </h2>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-ink-soft">
                     Filter by Class and Section to showcase allocated student profiles, then inspect monthly and overall start-to-date attendance.
                   </p>
                 </div>
@@ -1092,7 +1092,7 @@ export default function AdminDashboard() {
                       setSelectedStudentForAttendance(null);
                       setStudentAttendanceData(null);
                     }}
-                    className="bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-bold px-3 py-1.5 rounded-lg cursor-pointer"
+                    className="bg-manila/50 hover:bg-manila text-ink text-xs font-medium px-3 py-1.5 cursor-pointer"
                   >
                     ← Back to Class Roster
                   </button>
@@ -1100,9 +1100,9 @@ export default function AdminDashboard() {
               </div>
 
               {/* Step 1: Class & Section Filters */}
-              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="bg-paper p-4 border border-rule grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Select Class *</label>
+                  <label className="block text-xs font-medium text-ink mb-1">Select Class *</label>
                   <select
                     value={attClassId}
                     onChange={(e) => {
@@ -1111,7 +1111,7 @@ export default function AdminDashboard() {
                       setSelectedStudentForAttendance(null);
                       setStudentAttendanceData(null);
                     }}
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-[#0d9488] focus:outline-none bg-white font-medium cursor-pointer"
+                    className="w-full px-3.5 py-2 border border-rule text-xs focus:ring-2 focus:ring-copy focus:outline-none bg-sheet font-medium cursor-pointer"
                   >
                     <option value="">-- Select Class --</option>
                     {academicClasses.map((c) => (
@@ -1121,7 +1121,7 @@ export default function AdminDashboard() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Select Section *</label>
+                  <label className="block text-xs font-medium text-ink mb-1">Select Section *</label>
                   <select
                     value={attSectionId}
                     onChange={(e) => {
@@ -1129,7 +1129,7 @@ export default function AdminDashboard() {
                       setSelectedStudentForAttendance(null);
                       setStudentAttendanceData(null);
                     }}
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-[#0d9488] focus:outline-none bg-white font-medium cursor-pointer"
+                    className="w-full px-3.5 py-2 border border-rule text-xs focus:ring-2 focus:ring-copy focus:outline-none bg-sheet font-medium cursor-pointer"
                   >
                     <option value="">-- Select Section --</option>
                     {(academicClasses.find((c) => c.id === attClassId)?.sections || [
@@ -1146,16 +1146,16 @@ export default function AdminDashboard() {
               {!selectedStudentForAttendance ? (
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <h3 className="text-xs font-bold text-[#0b192c] uppercase tracking-wider">
+                    <h3 className="text-xs font-medium text-ink uppercase tracking-wider">
                       Allocated Student Profiles ({classSectionStudents.length} Students)
                     </h3>
-                    <span className="text-xs text-slate-500 font-medium">
+                    <span className="text-xs text-ink-soft font-medium">
                       Select a student profile below to view monthly & overall attendance analytics
                     </span>
                   </div>
 
                   {classSectionStudents.length === 0 ? (
-                    <div className="text-center py-10 bg-slate-50 rounded-2xl border border-slate-200 text-slate-400 text-xs">
+                    <div className="text-center py-10 bg-paper border border-rule text-ink-faint text-xs">
                       No students allocated to the selected Class & Section. Please select a Class & Section above.
                     </div>
                   ) : (
@@ -1164,23 +1164,23 @@ export default function AdminDashboard() {
                         <div
                           key={st.id}
                           onClick={() => fetchStudentAttendanceAnalytics(st)}
-                          className="bg-slate-50 hover:bg-teal-50/50 p-4 rounded-2xl border border-slate-200 hover:border-[#0d9488] transition-all cursor-pointer space-y-2 group shadow-sm hover:shadow-md"
+                          className="bg-paper hover:bg-copy-wash/50 p-4 border border-rule hover:border-copy transition-all cursor-pointer space-y-2 group hover:"
                         >
                           <div className="flex justify-between items-start">
                             <div>
-                              <h4 className="font-bold text-[#0b192c] text-sm group-hover:text-[#0d9488] transition-colors">
+                              <h4 className="font-medium text-ink text-sm group-hover:text-copy transition-colors">
                                 {st.profile?.fullName}
                               </h4>
-                              <div className="text-[11px] font-mono text-slate-500">{st.studentCode}</div>
+                              <div className="text-[11px] font-mono text-ink-soft">{st.studentCode}</div>
                             </div>
-                            <span className="bg-teal-100 text-teal-800 text-[10px] font-bold px-2 py-0.5 rounded-md">
+                            <span className="bg-paid-wash text-paid text-[10px] font-medium px-2 py-0.5">
                               Roll #{st.rollNumber}
                             </span>
                           </div>
 
-                          <div className="flex items-center justify-between text-xs text-slate-600 pt-2 border-t border-slate-200/60">
+                          <div className="flex items-center justify-between text-xs text-ink-soft pt-2 border-t border-rule/60">
                             <span>Class: <strong>{st.enrollments?.[0]?.class?.name || 'Class 10'}-{st.enrollments?.[0]?.section?.name || 'A'}</strong></span>
-                            <span className="text-[#0d9488] font-bold group-hover:underline">View Analytics →</span>
+                            <span className="text-copy font-medium group-hover:underline">View Analytics →</span>
                           </div>
                         </div>
                       ))}
@@ -1191,30 +1191,30 @@ export default function AdminDashboard() {
                 /* Step 3: Selected Student Attendance Analytics Showcase */
                 <div className="space-y-6">
                   {/* Selected Profile Header */}
-                  <div className="bg-[#0b192c] text-white p-6 rounded-2xl shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="bg-ink text-white p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                      <span className="text-teal-400 text-xs font-mono font-bold uppercase tracking-wider">
+                      <span className="text-copy text-xs font-mono font-medium uppercase tracking-wider">
                         {selectedStudentForAttendance.studentCode} • Roll #{selectedStudentForAttendance.rollNumber}
                       </span>
-                      <h3 className="text-xl font-extrabold text-white mt-1">
+                      <h3 className="text-xl font-semibold text-white mt-1">
                         {selectedStudentForAttendance.profile?.fullName}
                       </h3>
-                      <p className="text-xs text-slate-300 mt-1">
+                      <p className="text-xs text-ink-faint mt-1">
                         Allocated to {selectedStudentForAttendance.enrollments?.[0]?.class?.name || 'Class 10'}-Section {selectedStudentForAttendance.enrollments?.[0]?.section?.name || 'A'}
                       </p>
                     </div>
 
-                    <div className="flex items-center space-x-4 bg-[#1e3e62] p-4 rounded-xl border border-teal-500/30">
+                    <div className="flex items-center space-x-4 bg-ink p-4 border border-teal-500/30">
                       <div className="text-center">
-                        <div className="text-[10px] text-teal-200 uppercase font-bold">Overall Attendance</div>
-                        <div className="text-2xl font-extrabold text-teal-300">
+                        <div className="text-[10px] text-copy uppercase font-medium">Overall Attendance</div>
+                        <div className="text-2xl font-semibold text-copy">
                           {studentAttendanceData?.startToDateStats?.overallPercentage || 100}%
                         </div>
                       </div>
                       <div className="h-8 w-px bg-slate-600"></div>
                       <div className="text-center">
-                        <div className="text-[10px] text-teal-200 uppercase font-bold">Session Working Days</div>
-                        <div className="text-2xl font-extrabold text-white">
+                        <div className="text-[10px] text-copy uppercase font-medium">Session Working Days</div>
+                        <div className="text-2xl font-semibold text-white">
                           {studentAttendanceData?.startToDateStats?.totalDays || 0}
                         </div>
                       </div>
@@ -1223,64 +1223,64 @@ export default function AdminDashboard() {
 
                   {/* Start-to-Date Overall Summary */}
                   <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                    <div className="bg-teal-50 border border-teal-200 p-4 rounded-2xl">
-                      <div className="text-xs font-bold text-teal-800 uppercase tracking-wider">Days Present</div>
-                      <div className="text-2xl font-extrabold text-[#0d9488] mt-1">
+                    <div className="bg-copy-wash border border-copy/25 p-4">
+                      <div className="text-xs font-medium text-copy-deep uppercase tracking-wider">Days Present</div>
+                      <div className="text-2xl font-semibold text-copy mt-1">
                         {studentAttendanceData?.startToDateStats?.presentDays || 0}
                       </div>
-                      <div className="text-[10px] text-slate-500 mt-1">From starting date till today</div>
+                      <div className="text-[10px] text-ink-soft mt-1">From starting date till today</div>
                     </div>
 
-                    <div className="bg-rose-50 border border-rose-200 p-4 rounded-2xl">
-                      <div className="text-xs font-bold text-rose-800 uppercase tracking-wider">Days Absent</div>
-                      <div className="text-2xl font-extrabold text-rose-600 mt-1">
+                    <div className="bg-due-wash border border-due/25 p-4">
+                      <div className="text-xs font-medium text-due uppercase tracking-wider">Days Absent</div>
+                      <div className="text-2xl font-semibold text-due mt-1">
                         {studentAttendanceData?.startToDateStats?.absentDays || 0}
                       </div>
-                      <div className="text-[10px] text-slate-500 mt-1">Unexcused leaves</div>
+                      <div className="text-[10px] text-ink-soft mt-1">Unexcused leaves</div>
                     </div>
 
-                    <div className="bg-amber-50 border border-amber-200 p-4 rounded-2xl">
-                      <div className="text-xs font-bold text-amber-800 uppercase tracking-wider">Days Late</div>
-                      <div className="text-2xl font-extrabold text-amber-600 mt-1">
+                    <div className="bg-hold-wash border border-hold/25 p-4">
+                      <div className="text-xs font-medium text-hold uppercase tracking-wider">Days Late</div>
+                      <div className="text-2xl font-semibold text-hold mt-1">
                         {studentAttendanceData?.startToDateStats?.lateDays || 0}
                       </div>
-                      <div className="text-[10px] text-slate-500 mt-1">Partial credit sessions</div>
+                      <div className="text-[10px] text-ink-soft mt-1">Partial credit sessions</div>
                     </div>
 
-                    <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl">
-                      <div className="text-xs font-bold text-slate-700 uppercase tracking-wider">Date Span</div>
-                      <div className="text-xs font-bold text-[#0b192c] mt-2 font-mono">
+                    <div className="bg-paper border border-rule p-4">
+                      <div className="text-xs font-medium text-ink uppercase tracking-wider">Date Span</div>
+                      <div className="text-xs font-medium text-ink mt-2 font-mono">
                         Start Date → Today
                       </div>
-                      <div className="text-[10px] text-slate-500 mt-1">Till Date Roster Analysis</div>
+                      <div className="text-[10px] text-ink-soft mt-1">Till Date Roster Analysis</div>
                     </div>
                   </div>
 
                   {/* Monthly Attendance Breakdown */}
                   <div className="space-y-3">
-                    <h4 className="text-xs font-bold text-[#0b192c] uppercase tracking-wider">Monthly Attendance Breakdown</h4>
-                    <div className="table-responsive">
-                      <table className="w-full text-left text-sm border-collapse">
+                    <h4 className="text-xs font-medium text-ink uppercase tracking-wider">Monthly Attendance Breakdown</h4>
+                    <div className="register-scroll">
+                      <table className="register">
                         <thead>
-                          <tr className="bg-[#0b192c] text-white text-xs uppercase tracking-wider">
-                            <th className="p-3.5 rounded-l-xl">Month</th>
-                            <th className="p-3.5">Total Days</th>
-                            <th className="p-3.5">Days Present</th>
-                            <th className="p-3.5">Days Absent</th>
-                            <th className="p-3.5">Days Late</th>
-                            <th className="p-3.5 rounded-r-xl">Monthly Attendance %</th>
+                          <tr>
+                            <th>Month</th>
+                            <th>Total Days</th>
+                            <th>Days Present</th>
+                            <th>Days Absent</th>
+                            <th>Days Late</th>
+                            <th>Monthly Attendance %</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
+                        <tbody className="divide-y divide-rule-soft font-medium text-ink">
                           {studentAttendanceData?.monthlyStats?.map((m) => (
-                            <tr key={m.month} className="hover:bg-slate-50">
-                              <td className="p-3.5 font-bold text-[#0b192c]">{m.month}</td>
-                              <td className="p-3.5 text-xs text-slate-600">{m.total} Days</td>
-                              <td className="p-3.5 text-xs font-bold text-[#0d9488]">{m.present} Days</td>
-                              <td className="p-3.5 text-xs font-bold text-rose-600">{m.absent} Days</td>
-                              <td className="p-3.5 text-xs font-bold text-amber-600">{m.late} Days</td>
-                              <td className="p-3.5">
-                                <span className="bg-teal-100 text-teal-800 font-bold px-2.5 py-1 rounded-full text-xs">
+                            <tr key={m.month} className="hover:bg-manila/25">
+                              <td className="font-medium text-ink">{m.month}</td>
+                              <td className="text-xs text-ink-soft">{m.total} Days</td>
+                              <td className="text-xs font-medium text-copy">{m.present} Days</td>
+                              <td className="text-xs font-medium text-due">{m.absent} Days</td>
+                              <td className="text-xs font-medium text-hold">{m.late} Days</td>
+                              <td>
+                                <span className="bg-paid-wash text-paid font-medium px-2.5 py-1 text-xs">
                                   {m.percentage}%
                                 </span>
                               </td>
@@ -1293,42 +1293,42 @@ export default function AdminDashboard() {
 
                   {/* Daily Attendance History Timeline */}
                   <div className="space-y-3">
-                    <h4 className="text-xs font-bold text-[#0b192c] uppercase tracking-wider">Daily Attendance History Log</h4>
-                    <div className="table-responsive">
-                      <table className="w-full text-left text-sm border-collapse">
+                    <h4 className="text-xs font-medium text-ink uppercase tracking-wider">Daily Attendance History Log</h4>
+                    <div className="register-scroll">
+                      <table className="register">
                         <thead>
-                          <tr className="bg-[#0b192c] text-white text-xs uppercase tracking-wider">
-                            <th className="p-3.5 rounded-l-xl">Date</th>
-                            <th className="p-3.5">Class & Section</th>
-                            <th className="p-3.5">Status</th>
-                            <th className="p-3.5">Marked By</th>
-                            <th className="p-3.5 rounded-r-xl">Remarks</th>
+                          <tr>
+                            <th>Date</th>
+                            <th>Class & Section</th>
+                            <th>Status</th>
+                            <th>Marked By</th>
+                            <th>Remarks</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
+                        <tbody className="divide-y divide-rule-soft font-medium text-ink">
                           {studentAttendanceData?.attendances?.map((rec) => (
-                            <tr key={rec.id} className="hover:bg-slate-50">
-                              <td className="p-3.5 font-mono text-xs font-bold text-slate-800">
+                            <tr key={rec.id} className="hover:bg-manila/25">
+                              <td className="font-mono text-xs font-medium text-ink">
                                 {new Date(rec.date).toLocaleDateString('en-GB')}
                               </td>
-                              <td className="p-3.5 text-xs text-slate-600">
+                              <td className="text-xs text-ink-soft">
                                 {rec.class?.name || 'Class 10'}-{rec.section?.name || 'A'}
                               </td>
-                              <td className="p-3.5">
+                              <td>
                                 <span
-                                  className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase ${
+                                  className={`mark ${
                                     rec.status === 'PRESENT'
-                                      ? 'bg-teal-100 text-teal-800'
+                                      ? 'bg-paid-wash text-paid'
                                       : rec.status === 'ABSENT'
-                                      ? 'bg-rose-100 text-rose-800'
-                                      : 'bg-amber-100 text-amber-800'
+                                      ? 'bg-due-wash text-due'
+                                      : 'bg-hold-wash text-hold'
                                   }`}
                                 >
-                                  {rec.status}
+                                  {String(rec.status).replace(/_/g, " ")}
                                 </span>
                               </td>
-                              <td className="p-3.5 text-xs text-slate-500">{rec.markedBy || 'Teacher'}</td>
-                              <td className="p-3.5 text-xs text-slate-600">{rec.remarks || 'Regular Session'}</td>
+                              <td className="text-xs text-ink-soft">{rec.markedBy || 'Teacher'}</td>
+                              <td className="text-xs text-ink-soft">{rec.remarks || 'Regular Session'}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -1342,40 +1342,40 @@ export default function AdminDashboard() {
 
           {/* DAILY WORK LOGS TAB */}
           {activeTab === 'work' && (
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
-              <div className="border-b border-slate-100 pb-4">
-                <h2 className="text-lg font-bold text-[#0b192c] flex items-center space-x-2">
-                  <CheckSquare className="w-5 h-5 text-[#0d9488]" />
-                  <span>Daily Work Logs Control</span>
+            <div className="bg-sheet p-6 border border-rule space-y-6">
+              <div className="border-b border-rule-soft pb-4">
+                <h2 className="text-[0.9375rem] font-semibold text-ink flex items-center space-x-2">
+                  <CheckSquare className="w-5 h-5 text-copy" />
+                  <span>Daily work logs</span>
                 </h2>
-                <p className="text-xs text-slate-500">View staff work updates and post your own admin daily work log</p>
+                <p className="text-xs text-ink-soft">Staff work logs, and your own.</p>
               </div>
 
               {/* Admin Post Daily Work Log Form */}
-              <form onSubmit={handlePostAdminWorkLog} className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3">
-                <h3 className="text-xs font-bold text-[#0b192c] uppercase tracking-wider">Post Admin Daily Work Log</h3>
+              <form onSubmit={handlePostAdminWorkLog} className="bg-paper p-5 border border-rule space-y-3">
+                <h3 className="text-xs font-medium text-ink uppercase tracking-wider">Post Admin Daily Work Log</h3>
                 <textarea
                   rows={2}
                   required
                   value={adminWorkSummary}
                   onChange={(e) => setAdminWorkSummary(e.target.value)}
                   placeholder="Enter details of operational tasks accomplished today..."
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-[#0d9488] focus:outline-none"
+                  className="w-full px-3.5 py-2 border border-rule text-xs focus:ring-2 focus:ring-copy focus:outline-none"
                 ></textarea>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <span className="text-xs text-slate-600 font-bold">Hours Worked:</span>
+                    <span className="text-xs text-ink-soft font-medium">Hours Worked:</span>
                     <input
                       type="number"
                       step="0.5"
                       value={adminHoursWorked}
                       onChange={(e) => setAdminHoursWorked(e.target.value)}
-                      className="w-20 px-2 py-1 rounded-lg border border-slate-300 text-xs"
+                      className="w-20 px-2 py-1 border border-rule text-xs"
                     />
                   </div>
                   <button
                     type="submit"
-                    className="bg-[#0d9488] hover:bg-[#0f766e] text-white px-4 py-2 rounded-xl text-xs font-bold cursor-pointer"
+                    className="bg-copy hover:bg-copy-deep text-white px-4 py-2 text-xs font-medium cursor-pointer"
                   >
                     Post Admin Work Update
                   </button>
@@ -1384,25 +1384,25 @@ export default function AdminDashboard() {
 
               {/* Staff Work Logs Directory */}
               <div className="space-y-3">
-                <h3 className="text-xs font-bold text-[#0b192c] uppercase tracking-wider">Submitted Work Updates Showcase</h3>
+                <h3 className="text-xs font-medium text-ink uppercase tracking-wider">Submitted Work Updates Showcase</h3>
                 {workUpdates.length === 0 ? (
-                  <div className="text-center py-8 text-slate-400 text-xs bg-slate-50 rounded-xl">
+                  <div className="text-center py-8 text-ink-faint text-xs bg-paper">
                     No work updates recorded yet.
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {workUpdates.map((w) => (
-                      <div key={w.id} className="p-4 rounded-2xl border border-slate-200 bg-slate-50 space-y-2">
+                      <div key={w.id} className="p-4 border border-rule bg-paper space-y-2">
                         <div className="flex justify-between items-start">
                           <div>
-                            <h4 className="font-bold text-[#0b192c] text-sm">{w.staff?.profile?.fullName || 'Staff Member'}</h4>
-                            <p className="text-xs text-slate-500">{w.staff?.designation || w.department}</p>
+                            <h4 className="font-medium text-ink text-sm">{w.staff?.profile?.fullName || 'Staff Member'}</h4>
+                            <p className="text-xs text-ink-soft">{w.staff?.designation || w.department}</p>
                           </div>
-                          <span className="text-xs font-mono text-[#0d9488] font-bold">
+                          <span className="text-xs font-mono text-copy font-medium">
                             {new Date(w.date).toLocaleDateString()}
                           </span>
                         </div>
-                        <p className="text-xs text-slate-700 bg-white p-3 rounded-xl border border-slate-200">
+                        <p className="text-xs text-ink bg-sheet p-3 border border-rule">
                           {w.workSummary}
                         </p>
                       </div>
@@ -1415,56 +1415,56 @@ export default function AdminDashboard() {
 
           {/* LEAVE APPROVALS TAB */}
           {activeTab === 'leave' && (
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
-              <div className="border-b border-slate-100 pb-4">
-                <h2 className="text-lg font-bold text-[#0b192c] flex items-center space-x-2">
-                  <Clock className="w-5 h-5 text-[#0d9488]" />
-                  <span>Leave Approvals & Admin Leave Application</span>
+            <div className="bg-sheet p-6 border border-rule space-y-6">
+              <div className="border-b border-rule-soft pb-4">
+                <h2 className="text-[0.9375rem] font-semibold text-ink flex items-center space-x-2">
+                  <Clock className="w-5 h-5 text-copy" />
+                  <span>Leave requests</span>
                 </h2>
-                <p className="text-xs text-slate-500">Review staff leaves or apply for Admin Leave (submitted to Super Admin Panel)</p>
+                <p className="text-xs text-ink-soft">Approve staff leave, or request leave of your own.</p>
               </div>
 
               {/* Admin Leave Request Form */}
-              <form onSubmit={handleApplyAdminLeave} className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-4">
-                <h3 className="text-xs font-bold text-[#0b192c] uppercase tracking-wider">
+              <form onSubmit={handleApplyAdminLeave} className="bg-paper p-5 border border-rule space-y-4">
+                <h3 className="text-xs font-medium text-ink uppercase tracking-wider">
                   Apply for Admin Leave (Routes to Super Admin Panel)
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Start Date *</label>
+                    <label className="block text-xs font-medium text-ink mb-1">Start Date *</label>
                     <input
                       type="date"
                       required
                       value={adminLeaveStart}
                       onChange={(e) => setAdminLeaveStart(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs"
+                      className="w-full px-3 py-2 border border-rule text-xs"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">End Date *</label>
+                    <label className="block text-xs font-medium text-ink mb-1">End Date *</label>
                     <input
                       type="date"
                       required
                       value={adminLeaveEnd}
                       onChange={(e) => setAdminLeaveEnd(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs"
+                      className="w-full px-3 py-2 border border-rule text-xs"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Reason *</label>
+                    <label className="block text-xs font-medium text-ink mb-1">Reason *</label>
                     <input
                       type="text"
                       required
                       value={adminLeaveReason}
                       onChange={(e) => setAdminLeaveReason(e.target.value)}
                       placeholder="e.g. Official Duty / Personal Leave"
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs"
+                      className="w-full px-3 py-2 border border-rule text-xs"
                     />
                   </div>
                 </div>
                 <button
                   type="submit"
-                  className="bg-[#0b192c] hover:bg-[#1e3e62] text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-md cursor-pointer"
+                  className="bg-ink hover:bg-copy-deep text-white px-5 py-2.5 text-xs font-medium cursor-pointer"
                 >
                   Submit Leave Request to Super Admin
                 </button>
@@ -1472,65 +1472,65 @@ export default function AdminDashboard() {
 
               {/* Staff Leave Applications Table */}
               <div className="space-y-3">
-                <h3 className="text-xs font-bold text-[#0b192c] uppercase tracking-wider">Staff Leave Applications</h3>
+                <h3 className="text-xs font-medium text-ink uppercase tracking-wider">Staff Leave Applications</h3>
                 {leaveRequests.length === 0 ? (
-                  <div className="text-center py-8 text-slate-400 text-xs bg-slate-50 rounded-xl">
+                  <div className="text-center py-8 text-ink-faint text-xs bg-paper">
                     No leave requests submitted.
                   </div>
                 ) : (
-                  <div className="table-responsive">
-                    <table className="w-full text-left text-sm border-collapse">
+                  <div className="register-scroll">
+                    <table className="register">
                       <thead>
-                        <tr className="bg-[#0b192c] text-white text-xs uppercase tracking-wider">
-                          <th className="p-3.5 rounded-l-xl">Staff Member</th>
-                          <th className="p-3.5">Dates & Duration</th>
-                          <th className="p-3.5">Reason</th>
-                          <th className="p-3.5">Status</th>
-                          <th className="p-3.5 text-right rounded-r-xl">Actions</th>
+                        <tr>
+                          <th>Staff Member</th>
+                          <th>Dates & Duration</th>
+                          <th>Reason</th>
+                          <th>Status</th>
+                          <th className="num">Actions</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
+                      <tbody className="divide-y divide-rule-soft font-medium text-ink">
                         {leaveRequests.map((req) => (
-                          <tr key={req.id} className="hover:bg-slate-50">
-                            <td className="p-3.5">
-                              <div className="font-bold text-[#0b192c]">{req.staff?.profile?.fullName || 'Staff'}</div>
-                              <div className="text-[10px] text-slate-500">{req.staff?.designation}</div>
+                          <tr key={req.id} className="hover:bg-manila/25">
+                            <td>
+                              <div className="font-medium text-ink">{req.staff?.profile?.fullName || 'Staff'}</div>
+                              <div className="text-[10px] text-ink-soft">{req.staff?.designation}</div>
                             </td>
-                            <td className="p-3.5 text-xs font-mono">
+                            <td className="text-xs font-mono">
                               {new Date(req.startDate).toLocaleDateString()} to {new Date(req.endDate).toLocaleDateString()}
                             </td>
-                            <td className="p-3.5 text-xs text-slate-600">{req.reason}</td>
-                            <td className="p-3.5">
+                            <td className="text-xs text-ink-soft">{req.reason}</td>
+                            <td>
                               <span
-                                className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase ${
+                                className={`mark ${
                                   req.status === 'APPROVED'
-                                    ? 'bg-teal-100 text-teal-800'
+                                    ? 'bg-paid-wash text-paid'
                                     : req.status === 'REJECTED'
-                                    ? 'bg-rose-100 text-rose-800'
-                                    : 'bg-amber-100 text-amber-800'
+                                    ? 'bg-due-wash text-due'
+                                    : 'bg-hold-wash text-hold'
                                 }`}
                               >
-                                {req.status}
+                                {String(req.status).replace(/_/g, " ")}
                               </span>
                             </td>
-                            <td className="p-3.5 text-right">
+                            <td className="text-right">
                               {req.status === 'PENDING' ? (
                                 <div className="flex items-center justify-end space-x-2">
                                   <button
                                     onClick={() => handleLeaveDecision(req.id, 'APPROVED')}
-                                    className="bg-[#0d9488] hover:bg-[#0f766e] text-white px-3 py-1.5 rounded-lg text-xs font-bold"
+                                    className="bg-copy hover:bg-copy-deep text-white px-3 py-1.5 text-xs font-medium"
                                   >
                                     Approve
                                   </button>
                                   <button
                                     onClick={() => handleLeaveDecision(req.id, 'REJECTED')}
-                                    className="bg-rose-600 hover:bg-rose-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold"
+                                    className="bg-rose-600 hover:bg-due-wash0 text-white px-3 py-1.5 text-xs font-medium"
                                   >
                                     Reject
                                   </button>
                                 </div>
                               ) : (
-                                <span className="text-xs text-slate-400">Processed</span>
+                                <span className="text-xs text-ink-faint">Processed</span>
                               )}
                             </td>
                           </tr>

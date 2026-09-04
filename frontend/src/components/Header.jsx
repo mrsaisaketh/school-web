@@ -1,10 +1,22 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { School, User, LogOut } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import { clearSession } from '../lib/api';
+
+/* The desk label. A thin ink bar with the school's mark on the left and who is
+   signed in on the right — the two things a shared office machine must show. */
+
+const ROLE_LABEL = {
+  SUPER_ADMIN: 'Principal',
+  ADMIN: 'Registrar',
+  ACCOUNTS: 'Accounts',
+  STAFF: 'Faculty',
+  USER: 'Student',
+};
 
 export default function Header({ userRole, userName }) {
   const navigate = useNavigate();
+  const signedIn = userRole && userRole !== 'GUEST';
 
   const handleLogout = () => {
     clearSession();
@@ -12,42 +24,49 @@ export default function Header({ userRole, userName }) {
   };
 
   return (
-    <header className="bg-[#0b192c] text-white border-b border-[#1e3e62] px-6 py-3.5 flex items-center justify-between shadow-md">
-      <div className="flex items-center space-x-3 cursor-pointer" onClick={() => navigate('/login')}>
-        <div className="bg-[#0d9488] text-white p-2 rounded-xl shadow-lg">
-          <School className="w-6 h-6" />
-        </div>
-        <div>
-          <h1 className="text-base font-extrabold tracking-tight text-white">St. Xavier ERP Portal</h1>
-          <p className="text-[10px] text-teal-300 font-semibold tracking-wide uppercase">Enterprise School Platform</p>
-        </div>
-      </div>
+    <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-4 border-b border-ink/15 bg-ink px-5 text-white">
+      <button
+        onClick={() => navigate(signedIn ? '.' : '/login')}
+        className="flex items-center gap-3 text-left"
+      >
+        {/* The school's initials, set like a stamp on a register cover. */}
+        <span className="grid h-8 w-8 place-items-center border border-manila-deep/60 bg-manila font-mono text-[0.6875rem] font-semibold tracking-tight text-ink">
+          SX
+        </span>
+        <span className="leading-tight">
+          <span className="block font-display text-[0.9375rem] font-semibold tracking-tight">
+            St. Xavier International School
+          </span>
+          <span className="block font-mono text-[0.625rem] uppercase tracking-[0.12em] text-white/55">
+            Office Register
+          </span>
+        </span>
+      </button>
 
-      <div className="flex items-center space-x-4">
-        {userRole && userRole !== 'GUEST' ? (
-          <div className="flex items-center space-x-3 bg-[#1e3e62] px-3.5 py-1.5 rounded-xl border border-teal-500/30">
-            <User className="w-4 h-4 text-teal-300" />
-            <div className="text-left">
-              <div className="text-xs font-bold text-white">{userName || userRole.replace('_', ' ')}</div>
-              <div className="text-[10px] text-teal-300 font-medium">{userRole.replace('_', ' ')}</div>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="ml-2 text-slate-300 hover:text-rose-400 p-1 transition-colors cursor-pointer"
-              title="Logout"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
-          </div>
-        ) : (
+      {signedIn ? (
+        <div className="flex items-center gap-4">
+          <span className="hidden text-right leading-tight sm:block">
+            <span className="block text-xs font-medium">{userName || ROLE_LABEL[userRole] || userRole}</span>
+            <span className="block font-mono text-[0.625rem] uppercase tracking-[0.12em] text-white/55">
+              {ROLE_LABEL[userRole] || userRole.replace('_', ' ')}
+            </span>
+          </span>
           <button
-            onClick={() => navigate('/login')}
-            className="bg-[#0d9488] hover:bg-[#0f766e] text-white text-xs font-bold px-4 py-2 rounded-xl transition-all cursor-pointer shadow-md"
+            onClick={handleLogout}
+            className="inline-flex items-center gap-1.5 border border-white/25 px-2.5 py-1 font-mono text-[0.625rem] uppercase tracking-wider text-white/80 transition-colors hover:border-white/60 hover:text-white"
           >
-            Portal Sign In
+            <LogOut className="h-3 w-3" />
+            Sign out
           </button>
-        )}
-      </div>
+        </div>
+      ) : (
+        <button
+          onClick={() => navigate('/login')}
+          className="border border-white/25 px-3 py-1 font-mono text-[0.625rem] uppercase tracking-wider text-white/80 transition-colors hover:border-white/60 hover:text-white"
+        >
+          Sign in
+        </button>
+      )}
     </header>
   );
 }

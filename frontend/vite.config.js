@@ -9,7 +9,8 @@ export default defineConfig({
     host: true,
     proxy: {
       '/api': {
-        target: 'http://127.0.0.1:5000',
+        // macOS reserves :5000 for the AirPlay receiver, so allow an override.
+        target: process.env.API_TARGET || 'http://127.0.0.1:5000',
         changeOrigin: true,
         secure: false,
         configure: (proxy, _options) => {

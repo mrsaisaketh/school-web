@@ -1,42 +1,50 @@
 import React, { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import Header from '../components/Header';
-import { School, Shield, ArrowRight, Lock, UserCheck, Mail } from 'lucide-react';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
 import { setSession } from '../lib/api';
+
+/* Signing in is signing the register at the office door: a ruled line for who
+   you are, a ruled line for your key, and a date stamp beside it. The desks
+   are listed by the job people actually do, not by the role constant. */
+
+const DESKS = [
+  { id: 'SUPER_ADMIN', label: "Principal", detail: 'Whole-school records', email: 'superadmin@school.com' },
+  { id: 'ADMIN', label: 'Registrar', detail: 'Admissions and staff', email: 'admin@school.com' },
+  { id: 'ACCOUNTS', label: 'Accounts', detail: 'Fees and receipts', email: 'accounts@school.com' },
+  { id: 'STAFF', label: 'Faculty', detail: 'Class attendance and work', email: 'staff@school.com' },
+  { id: 'USER', label: 'Student', detail: 'Your own record', email: '' },
+];
+
+const DASHBOARD_FOR = {
+  SUPER_ADMIN: '/dashboard/super-admin',
+  ADMIN: '/dashboard/admin',
+  ACCOUNTS: '/dashboard/accounts',
+  STAFF: '/dashboard/staff',
+  USER: '/dashboard/user',
+};
 
 export default function Login() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const initialRole = searchParams.get('role') || 'SUPER_ADMIN';
+  const expired = searchParams.get('expired') === '1';
 
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(() => DESKS.find((d) => d.id === initialRole)?.email ?? '');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState(initialRole);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const desk = DESKS.find((d) => d.id === role) || DESKS[0];
+  const isStudent = role === 'USER';
+
+  /* Choosing a desk fills in the identifier only. Passwords are never
+     prefilled — the field is always yours to complete. */
   const handleRoleSelect = (r) => {
     setRole(r);
     setPassword('');
-    switch (r) {
-      case 'SUPER_ADMIN':
-        setEmail('superadmin@school.com');
-        break;
-      case 'ADMIN':
-        setEmail('admin@school.com');
-        break;
-      case 'ACCOUNTS':
-        setEmail('accounts@school.com');
-        break;
-      case 'STAFF':
-        setEmail('staff@school.com');
-        break;
-      case 'USER':
-        setEmail('STU_1001');
-        break;
-      default:
-        setEmail('');
-    }
+    setError('');
+    setEmail(DESKS.find((d) => d.id === r)?.email ?? '');
   };
 
   const handleLogin = async (e) => {
@@ -56,140 +64,173 @@ export default function Login() {
 
       if (res.ok && data.user && data.token) {
         setSession(data.token, data.user);
-        switch (data.user.role) {
-          case 'SUPER_ADMIN':
-            navigate('/dashboard/super-admin');
-            break;
-          case 'ADMIN':
-            navigate('/dashboard/admin');
-            break;
-          case 'ACCOUNTS':
-            navigate('/dashboard/accounts');
-            break;
-          case 'STAFF':
-            navigate('/dashboard/staff');
-            break;
-          case 'USER':
-            navigate('/dashboard/user');
-            break;
-          default:
-            navigate('/login');
-        }
+        navigate(DASHBOARD_FOR[data.user.role] ?? '/login');
       } else {
-        setError(data.error || 'Authentication failed');
+        setError(data.error || 'Could not sign in. Check the ID and password and try again.');
       }
-    } catch (err) {
+    } catch {
       setLoading(false);
-      setError('Connection error. Please try again.');
+      setError('Could not reach the school server. Check your connection and try again.');
     }
   };
 
+  const today = new Date().toLocaleDateString('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+
   return (
-    <div className="min-h-screen bg-[#0b192c] text-white flex flex-col font-sans">
-      <Header userRole="GUEST" />
-
-      <main className="flex-1 flex items-center justify-center p-4">
-        <div className="w-full max-w-md space-y-6">
-          <div className="text-center space-y-2">
-            <div className="bg-[#0b192c] text-teal-300 p-3.5 rounded-2xl w-14 h-14 mx-auto flex items-center justify-center border border-[#1e3e62] shadow-xl">
-              <School className="w-8 h-8" />
-            </div>
-            <h1 className="text-2xl font-extrabold tracking-tight text-white">St. Xavier ERP Portal</h1>
-            <p className="text-xs text-teal-200/80">Select a role or sign in with your portal credentials</p>
+    <div className="min-h-screen bg-paper">
+      <div className="mx-auto grid min-h-screen max-w-6xl lg:grid-cols-[1.05fr_1fr]">
+        {/* ── Cover of the register ─────────────────────────────────────── */}
+        <aside className="relative hidden flex-col justify-between bg-ink px-10 py-10 text-white lg:flex">
+          <div className="flex items-center gap-3">
+            <span className="grid h-9 w-9 place-items-center border border-manila-deep/60 bg-manila font-mono text-xs font-semibold text-ink">
+              SX
+            </span>
+            <span className="font-mono text-[0.625rem] uppercase tracking-[0.16em] text-white/55">
+              Established 1974
+            </span>
           </div>
 
-          {/* Quick Role Selection Tabs */}
-          <div className="bg-[#0b192c] p-1.5 rounded-xl border border-[#1e3e62] grid grid-cols-5 gap-1 shadow-inner">
-            {[
-              { id: 'SUPER_ADMIN', label: 'Super' },
-              { id: 'ADMIN', label: 'Admin' },
-              { id: 'ACCOUNTS', label: 'Accounts' },
-              { id: 'STAFF', label: 'Staff' },
-              { id: 'USER', label: 'Student' },
-            ].map((item) => (
-              <button
-                key={item.id}
-                onClick={() => handleRoleSelect(item.id)}
-                className={`py-2 text-[11px] font-bold rounded-lg transition-all cursor-pointer ${
-                  role === item.id
-                    ? 'bg-[#0d9488] text-white shadow-md font-extrabold'
-                    : 'text-slate-300 hover:text-white'
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
+          <div>
+            <h1 className="max-w-md font-display text-[2.75rem] font-semibold leading-[1.03] tracking-[-0.015em]">
+              St. Xavier
+              <br />
+              International
+              <br />
+              School
+            </h1>
+            <p className="mt-5 max-w-sm text-sm leading-relaxed text-white/65">
+              The office register: admissions, attendance, fees and staff records, kept in one
+              place for the people who work them daily.
+            </p>
           </div>
 
-          <div className="bg-white text-slate-900 border border-slate-200 p-6 rounded-2xl shadow-2xl backdrop-blur-md space-y-6">
-            <div className="flex items-center space-x-2 text-xs font-semibold text-[#0d9488] bg-teal-50 border border-teal-200 px-3.5 py-2 rounded-xl">
-              <Shield className="w-4 h-4 shrink-0 text-[#0d9488]" />
-              <span>Target Role: <strong className="font-bold text-[#0b192c]">{role.replace('_', ' ')}</strong> Access</span>
+          {/* A date stamp, the way a register page is opened each morning. */}
+          <dl className="flex divide-x divide-white/15 border-t border-white/15 pt-5 font-mono text-[0.625rem] uppercase tracking-wider">
+            <div className="pr-6">
+              <dt className="text-white/45">Register date</dt>
+              <dd className="mt-1 text-sm normal-case tracking-normal text-white tnum">{today}</dd>
             </div>
+            <div className="px-6">
+              <dt className="text-white/45">Session</dt>
+              <dd className="mt-1 text-sm normal-case tracking-normal text-white tnum">2026&ndash;27</dd>
+            </div>
+          </dl>
+        </aside>
 
-            {error && (
-              <div className="bg-rose-50 border border-rose-200 text-rose-700 p-3.5 rounded-xl text-xs font-medium">
-                {error}
+        {/* ── The sign-in page ──────────────────────────────────────────── */}
+        <main className="flex flex-col justify-center px-6 py-12 sm:px-12">
+          <div className="mx-auto w-full max-w-sm">
+            <p className="font-mono text-[0.625rem] uppercase tracking-[0.14em] text-ink-faint">
+              Sign the register
+            </p>
+            <h2 className="mt-1.5 text-2xl font-bold tracking-tight text-ink">Sign in</h2>
+
+            {/* Desk selector. Radios, because it is one choice among five. */}
+            <fieldset className="mt-7">
+              <legend className="font-mono text-[0.625rem] uppercase tracking-wider text-ink-soft">
+                Your desk
+              </legend>
+              <div className="mt-2 border border-rule bg-sheet">
+                {DESKS.map((d, i) => (
+                  <label
+                    key={d.id}
+                    className={`flex cursor-pointer items-center gap-3 px-3.5 py-2.5 transition-colors ${
+                      i > 0 ? 'border-t border-rule-soft' : ''
+                    } ${role === d.id ? 'bg-manila/60' : 'hover:bg-manila/25'}`}
+                  >
+                    <input
+                      type="radio"
+                      name="desk"
+                      value={d.id}
+                      checked={role === d.id}
+                      onChange={() => handleRoleSelect(d.id)}
+                      className="h-3 w-3 shrink-0 accent-[color:var(--color-copy)]"
+                    />
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-[0.8125rem] font-medium text-ink">{d.label}</span>
+                      <span className="block text-[0.6875rem] text-ink-faint">{d.detail}</span>
+                    </span>
+                  </label>
+                ))}
               </div>
+            </fieldset>
+
+            {expired && !error && (
+              <p className="mt-5 border-l-2 border-hold bg-hold-wash px-3 py-2 text-xs text-hold">
+                Your session ended. Sign in again to continue.
+              </p>
             )}
 
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-[#0b192c] mb-1">
-                  {role === 'USER' ? 'Student Code / ID' : 'Email Address'}
-                </label>
-                <div className="relative">
-                  {role === 'USER' ? (
-                    <UserCheck className="w-4 h-4 text-slate-400 absolute left-3 top-3.5" />
-                  ) : (
-                    <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-3.5" />
-                  )}
-                  <input
-                    type="text"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder={role === 'USER' ? 'e.g. STU_1001' : 'user@school.com'}
-                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-300 text-sm text-slate-900 focus:ring-2 focus:ring-[#0d9488] focus:border-[#0d9488] focus:outline-none transition-all font-medium"
-                  />
-                </div>
-              </div>
+            {error && (
+              <p
+                role="alert"
+                className="mt-5 border-l-2 border-due bg-due-wash px-3 py-2 text-xs text-due"
+              >
+                {error}
+              </p>
+            )}
 
-              <div>
-                <label className="block text-xs font-bold text-[#0b192c] mb-1">
-                  {role === 'USER' ? 'Password (DOB: DD/MM/YYYY)' : 'Password'}
-                </label>
-                <div className="relative">
-                  <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-3.5" />
-                  <input
-                    type="password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder={role === 'USER' ? 'DD/MM/YYYY e.g. 15/08/2010' : '••••••••'}
-                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-300 text-sm text-slate-900 focus:ring-2 focus:ring-[#0d9488] focus:border-[#0d9488] focus:outline-none transition-all font-mono"
-                  />
-                </div>
-              </div>
+            <form onSubmit={handleLogin} className="mt-6 space-y-5">
+              <label className="block">
+                <span className="mb-1 block font-mono text-[0.625rem] uppercase tracking-wider text-ink-soft">
+                  {isStudent ? 'Student ID' : 'Email address'}
+                </span>
+                <input
+                  type="text"
+                  required
+                  autoComplete="username"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder={isStudent ? 'STU_1001' : 'you@school.com'}
+                  className="w-full border-0 border-b border-rule bg-transparent px-0 py-2 font-mono text-sm text-ink placeholder:text-ink-faint focus:border-copy focus:outline-none"
+                />
+              </label>
+
+              <label className="block">
+                <span className="mb-1 block font-mono text-[0.625rem] uppercase tracking-wider text-ink-soft">
+                  Password
+                </span>
+                <input
+                  type="password"
+                  required
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full border-0 border-b border-rule bg-transparent px-0 py-2 font-mono text-sm text-ink placeholder:text-ink-faint focus:border-copy focus:outline-none"
+                />
+                {isStudent && (
+                  <span className="mt-1.5 block text-[0.6875rem] text-ink-faint">
+                    Your date of birth, written as DD/MM/YYYY.
+                  </span>
+                )}
+              </label>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#0d9488] hover:bg-[#0f766e] text-white font-bold py-3 rounded-xl text-sm transition-all shadow-lg shadow-teal-900/20 flex items-center justify-center space-x-2 cursor-pointer mt-2"
+                className="group inline-flex w-full items-center justify-center gap-2 border border-copy bg-copy px-4 py-2.5 text-[0.8125rem] font-medium text-white transition-colors hover:bg-copy-deep disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {loading ? (
-                  <span>Authenticating...</span>
-                ) : (
-                  <>
-                    <span>Enter {role.replace('_', ' ')} Portal</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </>
+                {loading ? 'Signing in…' : `Open the ${desk.label.toLowerCase()} register`}
+                {!loading && (
+                  <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
                 )}
               </button>
             </form>
+
+            <p className="mt-8 border-t border-rule pt-4 text-xs text-ink-soft">
+              Looking for a job at the school?{' '}
+              <Link to="/careers" className="text-copy underline decoration-copy/40 underline-offset-2 hover:decoration-copy">
+                See current openings
+              </Link>
+              .
+            </p>
           </div>
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }

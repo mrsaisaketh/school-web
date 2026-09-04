@@ -77,30 +77,38 @@ export default function Sidebar({ role, activeTab, setActiveTab, isClassTeacher 
   const navItems = getNavItems();
 
   return (
-    <aside className="w-64 bg-[#0b192c] text-slate-300 min-h-[calc(100vh-4rem)] border-r border-[#1e3e62] flex flex-col justify-between p-4 shrink-0 shadow-lg">
-      <div className="space-y-1">
-        <div className="px-3 py-2 text-xs font-bold text-teal-300/80 uppercase tracking-wider">
-          {role.replace('_', ' ')} Navigation
-        </div>
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = activeTab === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer ${
-                isActive
-                  ? 'bg-[#1e3e62] text-white border border-teal-500/40 font-semibold shadow-md'
-                  : 'hover:bg-[#1e3e62]/50 hover:text-white text-slate-300'
-              }`}
-            >
-              <Icon className={`w-4 h-4 ${isActive ? 'text-teal-300' : 'text-teal-400/70'}`} />
-              <span>{item.label}</span>
-            </button>
-          );
-        })}
-      </div>
+    <aside className="w-56 shrink-0 border-r border-rule bg-sheet">
+      <nav className="sticky top-14 p-3">
+        <p className="px-2 pb-2 font-mono text-[0.625rem] uppercase tracking-[0.14em] text-ink-faint">
+          Registers
+        </p>
+        <ul className="space-y-px">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeTab === item.id;
+            return (
+              <li key={item.id}>
+                <button
+                  onClick={() => setActiveTab(item.id)}
+                  aria-current={isActive ? 'page' : undefined}
+                  /* The active register is a folder tab: buff fill and an ink
+                     edge on the left, so the eye finds it without a shadow. */
+                  className={`flex w-full items-center gap-2.5 border-l-2 px-2.5 py-2 text-left text-[0.8125rem] transition-colors ${
+                    isActive
+                      ? 'border-copy bg-manila/60 font-medium text-ink'
+                      : 'border-transparent text-ink-soft hover:bg-manila/30 hover:text-ink'
+                  }`}
+                >
+                  <Icon
+                    className={`h-3.5 w-3.5 shrink-0 ${isActive ? 'text-copy' : 'text-ink-faint'}`}
+                  />
+                  <span className="truncate">{item.label}</span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
     </aside>
   );
 }

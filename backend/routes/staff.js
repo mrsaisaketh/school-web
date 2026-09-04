@@ -33,6 +33,10 @@ router.post('/', requireAuth(...ADMINS), async (req, res) => {
     if (!fullName || !email) {
       return res.status(400).json({ error: 'Staff name and login email ID are required' });
     }
+    // No silent default: a shared, guessable password is worse than a failed create.
+    if (!password || String(password).length < 8) {
+      return res.status(400).json({ error: 'Set a password of at least 8 characters for this staff member.' });
+    }
 
     const school = await db.school.findFirst();
     let deptId = departmentId;
@@ -59,7 +63,7 @@ router.post('/', requireAuth(...ADMINS), async (req, res) => {
       data: {
         schoolId: school.id,
         email: email.toLowerCase().trim(),
-        password: await hashPassword(password || 'password123'),
+        password: await hashPassword(password),
         fullName,
         role: 'STAFF',
         status: 'ACTIVE',

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Facts } from '../components/ui';
 import { api, getUser } from '../lib/api';
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
@@ -264,7 +265,7 @@ export default function AccountsDashboard() {
   const pendingInvoices = invoices.filter((i) => i.status === 'PENDING_APPROVAL');
 
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-paper flex flex-col font-sans">
       <Header userRole="ACCOUNTS" userName={currentUser?.fullName || 'Accounts & Bursar Officer'} />
 
       <div className="flex flex-1">
@@ -275,40 +276,40 @@ export default function AccountsDashboard() {
           {activeTab === 'overview' && (
             <div className="space-y-6">
               {/* Latest Transactions & Invoices Feed */}
-              <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+              <div className="bg-sheet p-6 border border-rule space-y-4">
+                <div className="flex justify-between items-center border-b border-rule-soft pb-3">
                   <div>
-                    <h2 className="text-lg font-bold text-[#0b192c] flex items-center space-x-2">
-                      <Receipt className="w-5 h-5 text-[#0d9488]" />
-                      <span>Latest Transactions & Issued Invoices Showcase</span>
+                    <h2 className="text-[0.9375rem] font-semibold text-ink flex items-center space-x-2">
+                      <Receipt className="w-5 h-5 text-copy" />
+                      <span>Recent transactions</span>
                     </h2>
-                    <p className="text-xs text-slate-500">Real-time ledger of latest fee payment transactions and invoice statuses</p>
+                    <p className="text-xs text-ink-soft">The most recent invoices and where each one stands.</p>
                   </div>
                   <button
                     onClick={loadData}
-                    className="bg-[#0b192c] hover:bg-[#1e3e62] text-white px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer"
+                    className="bg-ink hover:bg-copy-deep text-white px-3.5 py-1.5 text-xs font-medium transition-all cursor-pointer"
                   >
-                    Refresh Feed
+                    Refresh
                   </button>
                 </div>
 
-                <div className="table-responsive">
-                  <table className="w-full text-left text-sm border-collapse">
+                <div className="register-scroll">
+                  <table className="register">
                     <thead>
-                      <tr className="bg-[#0b192c] text-white text-xs uppercase tracking-wider">
-                        <th className="p-3.5 rounded-l-xl">Invoice No</th>
-                        <th className="p-3.5">Student Name (Code)</th>
-                        <th className="p-3.5">Fee Category</th>
-                        <th className="p-3.5">Total Amount</th>
-                        <th className="p-3.5">Paid Amount</th>
-                        <th className="p-3.5">UTR / Tx Ref</th>
-                        <th className="p-3.5 rounded-r-xl">Status</th>
+                      <tr>
+                        <th>Invoice No</th>
+                        <th>Student Name (Code)</th>
+                        <th>Fee Category</th>
+                        <th>Total Amount</th>
+                        <th>Paid Amount</th>
+                        <th>UTR / Tx Ref</th>
+                        <th>Status</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
+                    <tbody className="divide-y divide-rule-soft font-medium text-ink">
                       {invoices.length === 0 ? (
                         <tr>
-                          <td colSpan={7} className="p-8 text-center text-slate-400 text-xs">
+                          <td colSpan={7} className="p-8 text-center text-ink-faint text-xs">
                             No transaction invoices recorded.
                           </td>
                         </tr>
@@ -316,28 +317,28 @@ export default function AccountsDashboard() {
                         invoices.slice(0, 8).map((inv) => {
                           const tx = inv.payments?.[0]?.transactionNumber || inv.payments?.[0]?.providerTxId || 'N/A';
                           return (
-                            <tr key={inv.id} className="hover:bg-slate-50">
-                              <td className="p-3.5 font-mono text-xs font-bold text-[#0d9488]">{inv.invoiceNumber}</td>
-                              <td className="p-3.5">
-                                <div className="font-bold text-[#0b192c]">{inv.student?.profile?.fullName || 'Student'}</div>
-                                <div className="text-[10px] text-slate-500 font-mono">{inv.student?.studentCode}</div>
+                            <tr key={inv.id} className="hover:bg-manila/25">
+                              <td className="font-mono text-xs font-medium text-copy">{inv.invoiceNumber}</td>
+                              <td>
+                                <div className="font-medium text-ink">{inv.student?.profile?.fullName || 'Student'}</div>
+                                <div className="text-[10px] text-ink-soft font-mono">{inv.student?.studentCode}</div>
                               </td>
-                              <td className="p-3.5 text-xs text-slate-600 font-medium">{inv.feeCategory}</td>
-                              <td className="p-3.5 text-xs font-bold text-slate-900">
+                              <td className="text-xs text-ink-soft font-medium">{inv.feeCategory}</td>
+                              <td className="text-xs font-medium text-ink">
                                 Rs. {inv.totalAmount.toLocaleString('en-IN')}
                               </td>
-                              <td className="p-3.5 text-xs font-bold text-[#0d9488]">
+                              <td className="text-xs font-medium text-copy">
                                 Rs. {inv.paidAmount.toLocaleString('en-IN')}
                               </td>
-                              <td className="p-3.5 font-mono text-xs text-slate-500">{tx}</td>
-                              <td className="p-3.5">
+                              <td className="font-mono text-xs text-ink-soft">{tx}</td>
+                              <td>
                                 <span
-                                  className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase ${
+                                  className={`mark ${
                                     inv.status === 'PAID'
-                                      ? 'bg-teal-100 text-teal-800'
+                                      ? 'bg-paid-wash text-paid'
                                       : inv.status === 'PENDING_APPROVAL'
-                                      ? 'bg-amber-100 text-amber-800'
-                                      : 'bg-rose-100 text-rose-800'
+                                      ? 'bg-hold-wash text-hold'
+                                      : 'bg-due-wash text-due'
                                   }`}
                                 >
                                   {inv.status === 'PENDING_APPROVAL' ? 'Pending Approval' : inv.status}
@@ -353,28 +354,28 @@ export default function AccountsDashboard() {
               </div>
 
               {/* Subject -> Teacher Attendance & Payroll Details Inspector */}
-              <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
-                <div className="border-b border-slate-100 pb-4">
-                  <h2 className="text-lg font-bold text-[#0b192c] flex items-center space-x-2">
-                    <UserCheck className="w-5 h-5 text-[#0d9488]" />
-                    <span>Teacher Attendance & Payroll Monthly Inspector</span>
+              <div className="bg-sheet p-6 border border-rule space-y-6">
+                <div className="border-b border-rule-soft pb-4">
+                  <h2 className="text-[0.9375rem] font-semibold text-ink flex items-center space-x-2">
+                    <UserCheck className="w-5 h-5 text-copy" />
+                    <span>Payroll and attendance by teacher</span>
                   </h2>
-                  <p className="text-xs text-slate-500">
-                    Select a subject to list associated teachers, then inspect working days, attendance, total salary & detailed month leaves (LOP/CL/SL)
+                  <p className="text-xs text-ink-soft">
+                    Pick a subject, then a teacher, to see their days worked and this month’s pay.
                   </p>
                 </div>
 
                 {/* Step A: Subject Drop Box */}
-                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="bg-paper p-4 border border-rule grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Select Subject Dropdown *</label>
+                    <label className="block text-xs font-medium text-ink mb-1">Subject *</label>
                     <select
                       value={selectedSubject}
                       onChange={(e) => {
                         setSelectedSubject(e.target.value);
                         setSelectedTeacherId('');
                       }}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-[#0d9488] focus:outline-none bg-white font-bold text-[#0b192c] cursor-pointer"
+                      className="w-full px-3.5 py-2.5 border border-rule text-xs focus:ring-2 focus:ring-copy focus:outline-none bg-sheet font-medium text-ink cursor-pointer"
                     >
                       <option value="Physics">Physics</option>
                       <option value="Mathematics">Mathematics</option>
@@ -387,11 +388,11 @@ export default function AccountsDashboard() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Select Faculty Teacher for {selectedSubject} *</label>
+                    <label className="block text-xs font-medium text-ink mb-1">Teacher for {selectedSubject} *</label>
                     <select
                       value={selectedTeacherId || (subjectTeachers[0]?.id || '')}
                       onChange={(e) => setSelectedTeacherId(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-[#0d9488] focus:outline-none bg-white font-bold text-[#0b192c] cursor-pointer"
+                      className="w-full px-3.5 py-2.5 border border-rule text-xs focus:ring-2 focus:ring-copy focus:outline-none bg-sheet font-medium text-ink cursor-pointer"
                     >
                       {subjectTeachers.length === 0 ? (
                         <option value="">No teachers allocated for {selectedSubject}</option>
@@ -409,93 +410,79 @@ export default function AccountsDashboard() {
                 {/* Step B: Teacher Detailed Showcase Card */}
                 {teacherDetails ? (
                   <div className="space-y-6">
-                    <div className="bg-[#0b192c] text-white p-6 rounded-2xl shadow-md flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div className="bg-ink text-white p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                       <div>
-                        <span className="bg-teal-900 text-teal-300 text-[10px] font-mono font-bold px-2.5 py-1 rounded-md uppercase">
+                        <span className="bg-teal-900 text-copy text-[10px] font-mono font-medium px-2.5 py-1 uppercase">
                           Emp Code: {teacherDetails.employeeCode}
                         </span>
-                        <h3 className="text-xl font-extrabold text-white mt-1.5">{teacherDetails.name}</h3>
-                        <p className="text-xs text-slate-300 mt-1">
+                        <h3 className="text-xl font-semibold text-white mt-1.5">{teacherDetails.name}</h3>
+                        <p className="text-xs text-ink-faint mt-1">
                           {teacherDetails.designation} • Department of {teacherDetails.subject}
                         </p>
                       </div>
 
-                      <div className="flex items-center space-x-4 bg-[#1e3e62] p-4 rounded-xl border border-teal-500/30">
+                      <div className="flex items-center space-x-4 bg-ink p-4 border border-teal-500/30">
                         <div className="text-center">
-                          <div className="text-[10px] text-teal-200 font-bold uppercase">Net Salary</div>
-                          <div className="text-2xl font-extrabold text-teal-300">
+                          <div className="text-[10px] text-white/60 font-medium uppercase">Net Salary</div>
+                          <div className="text-2xl font-semibold text-copy">
                             Rs. {teacherDetails.netSalary.toLocaleString('en-IN')}
                           </div>
                         </div>
-                        <div className="h-8 w-px bg-slate-600"></div>
+                        <div className="h-8 w-px bg-white/25"></div>
                         <div className="text-center">
-                          <div className="text-[10px] text-teal-200 font-bold uppercase">Base Salary</div>
-                          <div className="text-lg font-bold text-white">
+                          <div className="text-[10px] text-white/60 font-medium uppercase">Base Salary</div>
+                          <div className="text-[0.9375rem] font-semibold text-white">
                             Rs. {teacherDetails.baseSalary.toLocaleString('en-IN')}
                           </div>
                         </div>
                       </div>
                     </div>
 
-                    {/* Attendance Metrics Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                      <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl">
-                        <div className="text-xs font-bold text-slate-700 uppercase">Working Days</div>
-                        <div className="text-2xl font-extrabold text-[#0b192c] mt-1">{teacherDetails.totalWorkingDays} Days</div>
-                        <div className="text-[10px] text-slate-500 mt-1">Current Academic Month</div>
-                      </div>
-
-                      <div className="bg-teal-50 border border-teal-200 p-4 rounded-2xl">
-                        <div className="text-xs font-bold text-teal-800 uppercase">Present Days</div>
-                        <div className="text-2xl font-extrabold text-[#0d9488] mt-1">{teacherDetails.presentDays} Days</div>
-                        <div className="text-[10px] text-slate-500 mt-1">Sessions attended</div>
-                      </div>
-
-                      <div className="bg-rose-50 border border-rose-200 p-4 rounded-2xl">
-                        <div className="text-xs font-bold text-rose-800 uppercase">Absent Days</div>
-                        <div className="text-2xl font-extrabold text-rose-600 mt-1">{teacherDetails.absentDays} Days</div>
-                        <div className="text-[10px] text-slate-500 mt-1">Total leaves taken</div>
-                      </div>
-
-                      <div className="bg-amber-50 border border-amber-200 p-4 rounded-2xl">
-                        <div className="text-xs font-bold text-amber-800 uppercase">LOP Deductions</div>
-                        <div className="text-2xl font-extrabold text-amber-600 mt-1">
-                          {teacherDetails.leaves.find((l) => l.type.includes('LOP'))?.deduction}
-                        </div>
-                        <div className="text-[10px] text-slate-500 mt-1">Loss of Pay calculated</div>
-                      </div>
-                    </div>
+                    {/* Attendance for the month, as one line of facts. */}
+                    <Facts
+                      className="mt-1"
+                      items={[
+                        { label: 'Working days', value: teacherDetails.totalWorkingDays },
+                        { label: 'Present', value: teacherDetails.presentDays, tone: 'paid' },
+                        { label: 'Absent', value: teacherDetails.absentDays, tone: teacherDetails.absentDays > 0 ? 'due' : undefined },
+                        {
+                          label: 'Loss of pay',
+                          value: teacherDetails.leaves.find((l) => l.type.includes('LOP'))?.deduction ?? 'Rs. 0',
+                          tone: 'due',
+                        },
+                      ]}
+                    />
 
                     {/* Detailed Leaves Breakdown Table */}
                     <div className="space-y-3">
-                      <h4 className="text-xs font-bold text-[#0b192c] uppercase tracking-wider">
-                        Itemized Leave Breakdown for Month
+                      <h4 className="text-xs font-medium text-ink uppercase tracking-wider">
+                        Leave taken this month
                       </h4>
-                      <div className="table-responsive">
-                        <table className="w-full text-left text-sm border-collapse">
+                      <div className="register-scroll">
+                        <table className="register">
                           <thead>
-                            <tr className="bg-[#0b192c] text-white text-xs uppercase tracking-wider">
-                              <th className="p-3.5 rounded-l-xl">Leave Category</th>
-                              <th className="p-3.5">Days Taken</th>
-                              <th className="p-3.5">Salary Impact</th>
-                              <th className="p-3.5 rounded-r-xl">Status</th>
+                            <tr>
+                              <th>Leave Category</th>
+                              <th>Days Taken</th>
+                              <th>Salary Impact</th>
+                              <th>Status</th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
+                          <tbody className="divide-y divide-rule-soft font-medium text-ink">
                             {teacherDetails.leaves.map((lv, idx) => (
-                              <tr key={idx} className="hover:bg-slate-50">
-                                <td className="p-3.5 font-bold text-[#0b192c]">{lv.type}</td>
-                                <td className="p-3.5 text-xs text-slate-700 font-bold">{lv.days} Day(s)</td>
-                                <td className="p-3.5 text-xs font-bold text-rose-600">{lv.deduction}</td>
-                                <td className="p-3.5">
+                              <tr key={idx} className="hover:bg-manila/25">
+                                <td className="font-medium text-ink">{lv.type}</td>
+                                <td className="text-xs text-ink font-medium">{lv.days} Day(s)</td>
+                                <td className="text-xs font-medium text-due">{lv.deduction}</td>
+                                <td>
                                   <span
-                                    className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase ${
+                                    className={`mark ${
                                       lv.type.includes('LOP')
-                                        ? 'bg-rose-100 text-rose-800'
-                                        : 'bg-teal-100 text-teal-800'
+                                        ? 'bg-due-wash text-due'
+                                        : 'bg-paid-wash text-paid'
                                     }`}
                                   >
-                                    {lv.status}
+                                    {String(lv.status).replace(/_/g, " ")}
                                   </span>
                                 </td>
                               </tr>
@@ -506,7 +493,7 @@ export default function AccountsDashboard() {
                     </div>
                   </div>
                 ) : (
-                  <div className="p-8 text-center text-slate-400 text-xs bg-slate-50 rounded-2xl">
+                  <div className="p-8 text-center text-ink-faint text-xs bg-paper">
                     No teacher details available for the selected subject.
                   </div>
                 )}
@@ -516,28 +503,28 @@ export default function AccountsDashboard() {
 
           {/* TAB 2: FEE STRUCTURES & PAY FLOW */}
           {activeTab === 'fee_structures' && (
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
-              <div className="border-b border-slate-100 pb-4">
-                <h2 className="text-lg font-bold text-[#0b192c] flex items-center space-x-2">
-                  <CreditCard className="w-5 h-5 text-[#0d9488]" />
-                  <span>Fee Structures & Student Fee Collection</span>
+            <div className="bg-sheet p-6 border border-rule space-y-6">
+              <div className="border-b border-rule-soft pb-4">
+                <h2 className="text-[0.9375rem] font-semibold text-ink flex items-center space-x-2">
+                  <CreditCard className="w-5 h-5 text-copy" />
+                  <span>Fee structures</span>
                 </h2>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-ink-soft">
                   Select Class & Section or Search Student ID to showcase details, choose fee categories, enter amount & Transaction UTR to generate invoice for approval.
                 </p>
               </div>
 
               {/* Step 1: Class, Section & Search Filter Bar */}
-              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="bg-paper p-4 border border-rule grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Select Class *</label>
+                  <label className="block text-xs font-medium text-ink mb-1">Select Class *</label>
                   <select
                     value={feeClassId}
                     onChange={(e) => {
                       setFeeClassId(e.target.value);
                       setFeeSectionId('');
                     }}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-[#0d9488] focus:outline-none bg-white font-medium"
+                    className="w-full px-3 py-2 border border-rule text-xs focus:ring-2 focus:ring-copy focus:outline-none bg-sheet font-medium"
                   >
                     <option value="">-- All Classes --</option>
                     {academicClasses.map((c) => (
@@ -547,11 +534,11 @@ export default function AccountsDashboard() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Select Section *</label>
+                  <label className="block text-xs font-medium text-ink mb-1">Select Section *</label>
                   <select
                     value={feeSectionId}
                     onChange={(e) => setFeeSectionId(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-[#0d9488] focus:outline-none bg-white font-medium"
+                    className="w-full px-3 py-2 border border-rule text-xs focus:ring-2 focus:ring-copy focus:outline-none bg-sheet font-medium"
                   >
                     <option value="">-- All Sections --</option>
                     {(academicClasses.find((c) => c.id === feeClassId)?.sections || [
@@ -564,15 +551,15 @@ export default function AccountsDashboard() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Search by Student Code / ID / Name</label>
+                  <label className="block text-xs font-medium text-ink mb-1">Search by Student Code / ID / Name</label>
                   <div className="relative">
-                    <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                    <Search className="w-4 h-4 text-ink-faint absolute left-3 top-2.5" />
                     <input
                       type="text"
                       placeholder="e.g. STU_1001 or Rahul..."
                       value={studentSearch}
                       onChange={(e) => setStudentSearch(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 rounded-xl bg-white border border-slate-300 text-xs"
+                      className="w-full pl-9 pr-3 py-2 bg-sheet border border-rule text-xs"
                     />
                   </div>
                 </div>
@@ -580,53 +567,53 @@ export default function AccountsDashboard() {
 
               {/* Step 2: Student Fee Directory Table with Details Showcase */}
               <div className="space-y-3">
-                <h3 className="text-xs font-bold text-[#0b192c] uppercase tracking-wider">
+                <h3 className="text-xs font-medium text-ink uppercase tracking-wider">
                   Allocated Students Fee Directory ({filteredStudents.length} Students)
                 </h3>
 
                 {filteredStudents.length === 0 ? (
-                  <div className="text-center py-10 bg-slate-50 rounded-2xl text-slate-400 text-xs border border-slate-200">
+                  <div className="text-center py-10 bg-paper text-ink-faint text-xs border border-rule">
                     No students match the selected class, section or search query.
                   </div>
                 ) : (
-                  <div className="table-responsive">
-                    <table className="w-full text-left text-sm border-collapse">
+                  <div className="register-scroll">
+                    <table className="register">
                       <thead>
-                        <tr className="bg-[#0b192c] text-white text-xs uppercase tracking-wider">
-                          <th className="p-3.5 rounded-l-xl">Student Code / ID</th>
-                          <th className="p-3.5">Name</th>
-                          <th className="p-3.5">Class & Sec</th>
-                          <th className="p-3.5">Roll No</th>
-                          <th className="p-3.5">Total Fee to Pay</th>
-                          <th className="p-3.5">Amount Paid</th>
-                          <th className="p-3.5">Balance Amount</th>
-                          <th className="p-3.5 text-right rounded-r-xl">Action</th>
+                        <tr>
+                          <th>Student Code / ID</th>
+                          <th>Name</th>
+                          <th>Class & Sec</th>
+                          <th>Roll No</th>
+                          <th>Total Fee to Pay</th>
+                          <th>Amount Paid</th>
+                          <th>Balance Amount</th>
+                          <th className="num">Action</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
+                      <tbody className="divide-y divide-rule-soft font-medium text-ink">
                         {filteredStudents.map((st) => {
                           const summary = getStudentFeeSummary(st);
                           return (
-                            <tr key={st.id} className="hover:bg-slate-50">
-                              <td className="p-3.5 font-mono text-xs font-bold text-[#0d9488]">{st.studentCode}</td>
-                              <td className="p-3.5 font-bold text-[#0b192c]">{st.profile?.fullName}</td>
-                              <td className="p-3.5 text-xs text-slate-700 font-semibold">
+                            <tr key={st.id} className="hover:bg-manila/25">
+                              <td className="font-mono text-xs font-medium text-copy">{st.studentCode}</td>
+                              <td className="font-medium text-ink">{st.profile?.fullName}</td>
+                              <td className="text-xs text-ink font-semibold">
                                 {st.enrollments?.[0]?.class?.name || 'Class 10'}-{st.enrollments?.[0]?.section?.name || 'A'}
                               </td>
-                              <td className="p-3.5 text-xs text-slate-600">{st.rollNumber}</td>
-                              <td className="p-3.5 text-xs font-bold text-slate-900">
+                              <td className="text-xs text-ink-soft">{st.rollNumber}</td>
+                              <td className="text-xs font-medium text-ink">
                                 Rs. {summary.totalFee.toLocaleString('en-IN')}
                               </td>
-                              <td className="p-3.5 text-xs font-bold text-[#0d9488]">
+                              <td className="text-xs font-medium text-copy">
                                 Rs. {summary.paidAmount.toLocaleString('en-IN')}
                               </td>
-                              <td className="p-3.5 text-xs font-bold text-rose-600">
+                              <td className="text-xs font-medium text-due">
                                 Rs. {summary.balanceAmount.toLocaleString('en-IN')}
                               </td>
-                              <td className="p-3.5 text-right">
+                              <td className="text-right">
                                 <button
                                   onClick={() => handleOpenPay(st)}
-                                  className="bg-[#0d9488] hover:bg-[#0f766e] text-white px-4 py-1.5 rounded-xl text-xs font-bold cursor-pointer shadow-sm transition-all"
+                                  className="bg-copy hover:bg-copy-deep text-white px-4 py-1.5 text-xs font-medium cursor-pointer transition-all"
                                 >
                                   Pay Fee
                                 </button>
@@ -644,22 +631,22 @@ export default function AccountsDashboard() {
 
           {/* TAB 3: INVOICES ISSUED */}
           {activeTab === 'invoices' && (
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
-              <div className="border-b border-slate-100 pb-4">
-                <h2 className="text-lg font-bold text-[#0b192c] flex items-center space-x-2">
-                  <Receipt className="w-5 h-5 text-[#0d9488]" />
-                  <span>Invoices Issued & Approval Queue</span>
+            <div className="bg-sheet p-6 border border-rule space-y-6">
+              <div className="border-b border-rule-soft pb-4">
+                <h2 className="text-[0.9375rem] font-semibold text-ink flex items-center space-x-2">
+                  <Receipt className="w-5 h-5 text-copy" />
+                  <span>Invoices awaiting approval</span>
                 </h2>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-ink-soft">
                   Review generated fee invoices submitted for approval. Approving sends the invoice to the student and updates balance amounts.
                 </p>
               </div>
 
               {/* Pending Approval Invoices Banner */}
               {pendingInvoices.length > 0 && (
-                <div className="bg-amber-50 border border-amber-200 p-4 rounded-2xl flex items-center justify-between text-xs text-amber-900 font-medium">
+                <div className="bg-hold-wash border border-hold/25 p-4 flex items-center justify-between text-xs text-amber-900 font-medium">
                   <div className="flex items-center space-x-2">
-                    <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
+                    <AlertCircle className="w-5 h-5 text-hold shrink-0" />
                     <span>
                       <strong>{pendingInvoices.length} Invoice(s) Pending Approval:</strong> Review payment UTRs below and approve to send invoices to students.
                     </span>
@@ -668,23 +655,23 @@ export default function AccountsDashboard() {
               )}
 
               {/* Invoices Directory Table */}
-              <div className="table-responsive">
-                <table className="w-full text-left text-sm border-collapse">
+              <div className="register-scroll">
+                <table className="register">
                   <thead>
-                    <tr className="bg-[#0b192c] text-white text-xs uppercase tracking-wider">
-                      <th className="p-3.5 rounded-l-xl">Invoice No</th>
-                      <th className="p-3.5">Student Name (Code)</th>
-                      <th className="p-3.5">Fee Category</th>
-                      <th className="p-3.5">Total Amount</th>
-                      <th className="p-3.5">UTR / Tx Ref</th>
-                      <th className="p-3.5">Status</th>
-                      <th className="p-3.5 text-right rounded-r-xl">Approval Actions</th>
+                    <tr>
+                      <th>Invoice No</th>
+                      <th>Student Name (Code)</th>
+                      <th>Fee Category</th>
+                      <th>Total Amount</th>
+                      <th>UTR / Tx Ref</th>
+                      <th>Status</th>
+                      <th className="num">Approval Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
+                  <tbody className="divide-y divide-rule-soft font-medium text-ink">
                     {invoices.length === 0 ? (
                       <tr>
-                        <td colSpan={7} className="p-8 text-center text-slate-400 text-xs">
+                        <td colSpan={7} className="p-8 text-center text-ink-faint text-xs">
                           No invoices issued yet.
                         </td>
                       </tr>
@@ -693,50 +680,50 @@ export default function AccountsDashboard() {
                         const tx = inv.payments?.[0]?.transactionNumber || inv.payments?.[0]?.providerTxId || 'N/A';
                         const isPending = inv.status === 'PENDING_APPROVAL';
                         return (
-                          <tr key={inv.id} className={isPending ? 'bg-amber-50/40 hover:bg-amber-50' : 'hover:bg-slate-50'}>
-                            <td className="p-3.5 font-mono text-xs font-bold text-[#0d9488]">{inv.invoiceNumber}</td>
-                            <td className="p-3.5">
-                              <div className="font-bold text-[#0b192c]">{inv.student?.profile?.fullName || 'Student'}</div>
-                              <div className="text-[10px] text-slate-500 font-mono">{inv.student?.studentCode}</div>
+                          <tr key={inv.id} className={isPending ? 'bg-hold-wash/40 hover:bg-hold-wash' : 'hover:bg-manila/25'}>
+                            <td className="font-mono text-xs font-medium text-copy">{inv.invoiceNumber}</td>
+                            <td>
+                              <div className="font-medium text-ink">{inv.student?.profile?.fullName || 'Student'}</div>
+                              <div className="text-[10px] text-ink-soft font-mono">{inv.student?.studentCode}</div>
                             </td>
-                            <td className="p-3.5 text-xs text-slate-600">{inv.feeCategory}</td>
-                            <td className="p-3.5 text-xs font-bold text-slate-900">
+                            <td className="text-xs text-ink-soft">{inv.feeCategory}</td>
+                            <td className="text-xs font-medium text-ink">
                               Rs. {inv.totalAmount.toLocaleString('en-IN')}
                             </td>
-                            <td className="p-3.5 font-mono text-xs font-bold text-slate-700">{tx}</td>
-                            <td className="p-3.5">
+                            <td className="font-mono text-xs font-medium text-ink">{tx}</td>
+                            <td>
                               <span
-                                className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase ${
+                                className={`mark ${
                                   inv.status === 'PAID'
-                                    ? 'bg-teal-100 text-teal-800'
+                                    ? 'bg-paid-wash text-paid'
                                     : isPending
-                                    ? 'bg-amber-100 text-amber-800'
-                                    : 'bg-rose-100 text-rose-800'
+                                    ? 'bg-hold-wash text-hold'
+                                    : 'bg-due-wash text-due'
                                 }`}
                               >
                                 {isPending ? 'Pending Approval' : inv.status}
                               </span>
                             </td>
-                            <td className="p-3.5 text-right">
+                            <td className="text-right">
                               {isPending ? (
                                 <div className="flex items-center justify-end space-x-2">
                                   <button
                                     onClick={() => handleApproveInvoice(inv.id)}
-                                    className="bg-[#0d9488] hover:bg-[#0f766e] text-white px-3 py-1.5 rounded-xl text-xs font-bold cursor-pointer transition-all flex items-center space-x-1"
+                                    className="bg-copy hover:bg-copy-deep text-white px-3 py-1.5 text-xs font-medium cursor-pointer transition-all flex items-center space-x-1"
                                   >
                                     <Check className="w-3.5 h-3.5" />
                                     <span>Approve</span>
                                   </button>
                                   <button
                                     onClick={() => handleRejectInvoice(inv.id)}
-                                    className="bg-rose-600 hover:bg-rose-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold cursor-pointer transition-all flex items-center space-x-1"
+                                    className="bg-rose-600 hover:bg-due-wash0 text-white px-3 py-1.5 text-xs font-medium cursor-pointer transition-all flex items-center space-x-1"
                                   >
                                     <XCircle className="w-3.5 h-3.5" />
                                     <span>Reject</span>
                                   </button>
                                 </div>
                               ) : (
-                                <span className="text-xs text-slate-400 font-bold">Approved & Sent</span>
+                                <span className="text-xs text-ink-faint font-medium">Approved & Sent</span>
                               )}
                             </td>
                           </tr>
@@ -751,55 +738,55 @@ export default function AccountsDashboard() {
 
           {/* TAB 4: PAYMENT HISTORY */}
           {activeTab === 'payments' && (
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
-              <div className="border-b border-slate-100 pb-4">
-                <h2 className="text-lg font-bold text-[#0b192c] flex items-center space-x-2">
-                  <DollarSign className="w-5 h-5 text-[#0d9488]" />
-                  <span>Payment History & Money Received Log</span>
+            <div className="bg-sheet p-6 border border-rule space-y-6">
+              <div className="border-b border-rule-soft pb-4">
+                <h2 className="text-[0.9375rem] font-semibold text-ink flex items-center space-x-2">
+                  <DollarSign className="w-5 h-5 text-copy" />
+                  <span>Payments received</span>
                 </h2>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-ink-soft">
                   Complete ledger of verified money received with corresponding generated invoice details
                 </p>
               </div>
 
-              <div className="table-responsive">
-                <table className="w-full text-left text-sm border-collapse">
+              <div className="register-scroll">
+                <table className="register">
                   <thead>
-                    <tr className="bg-[#0b192c] text-white text-xs uppercase tracking-wider">
-                      <th className="p-3.5 rounded-l-xl">Transaction / UTR No</th>
-                      <th className="p-3.5">Invoice No</th>
-                      <th className="p-3.5">Student Name (Code)</th>
-                      <th className="p-3.5">Amount Received</th>
-                      <th className="p-3.5">Payment Method</th>
-                      <th className="p-3.5">Date & Time</th>
-                      <th className="p-3.5 rounded-r-xl">Verification Status</th>
+                    <tr>
+                      <th>Transaction / UTR No</th>
+                      <th>Invoice No</th>
+                      <th>Student Name (Code)</th>
+                      <th>Amount Received</th>
+                      <th>Payment Method</th>
+                      <th>Date & Time</th>
+                      <th>Verification Status</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
+                  <tbody className="divide-y divide-rule-soft font-medium text-ink">
                     {paymentsHistory.length === 0 ? (
                       <tr>
-                        <td colSpan={7} className="p-8 text-center text-slate-400 text-xs">
+                        <td colSpan={7} className="p-8 text-center text-ink-faint text-xs">
                           No verified payments recorded.
                         </td>
                       </tr>
                     ) : (
                       paymentsHistory.map((pmt) => (
-                        <tr key={pmt.id} className="hover:bg-slate-50">
-                          <td className="p-3.5 font-mono text-xs font-bold text-[#0d9488]">
+                        <tr key={pmt.id} className="hover:bg-manila/25">
+                          <td className="font-mono text-xs font-medium text-copy">
                             {pmt.transactionNumber || pmt.providerTxId}
                           </td>
-                          <td className="p-3.5 font-mono text-xs text-slate-700">{pmt.invoice?.invoiceNumber || 'N/A'}</td>
-                          <td className="p-3.5">
-                            <div className="font-bold text-[#0b192c]">{pmt.student?.profile?.fullName || 'Student'}</div>
-                            <div className="text-[10px] text-slate-500 font-mono">{pmt.student?.studentCode}</div>
+                          <td className="font-mono text-xs text-ink">{pmt.invoice?.invoiceNumber || 'N/A'}</td>
+                          <td>
+                            <div className="font-medium text-ink">{pmt.student?.profile?.fullName || 'Student'}</div>
+                            <div className="text-[10px] text-ink-soft font-mono">{pmt.student?.studentCode}</div>
                           </td>
-                          <td className="p-3.5 text-xs font-bold text-[#0d9488]">
+                          <td className="text-xs font-medium text-copy">
                             Rs. {pmt.amount.toLocaleString('en-IN')}
                           </td>
-                          <td className="p-3.5 text-xs font-bold text-slate-700">{pmt.paymentMethod}</td>
-                          <td className="p-3.5 text-xs text-slate-500">{new Date(pmt.createdAt).toLocaleString()}</td>
-                          <td className="p-3.5">
-                            <span className="bg-teal-100 text-teal-800 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase">
+                          <td className="text-xs font-medium text-ink">{pmt.paymentMethod}</td>
+                          <td className="text-xs text-ink-soft">{new Date(pmt.createdAt).toLocaleString()}</td>
+                          <td>
+                            <span className="bg-paid-wash text-paid mark">
                               VERIFIED
                             </span>
                           </td>
@@ -816,19 +803,19 @@ export default function AccountsDashboard() {
 
       {/* FEE PAYMENT SELECTION MODAL */}
       {isPayOpen && selectedStudent && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-200 overflow-hidden space-y-5 p-6">
+        <div className="fixed inset-0 z-50 bg-ink/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-sheet w-full max-w-lg border border-rule overflow-hidden space-y-5 p-6">
             {/* Modal Header */}
-            <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+            <div className="flex justify-between items-center border-b border-rule-soft pb-3">
               <div>
-                <h3 className="text-base font-bold text-[#0b192c]">Student Fee Payment & Invoice Generation</h3>
-                <p className="text-xs text-slate-500">
+                <h3 className="text-base font-medium text-ink">Student Fee Payment & Invoice Generation</h3>
+                <p className="text-xs text-ink-soft">
                   {selectedStudent.profile?.fullName} ({selectedStudent.studentCode}) • Roll #{selectedStudent.rollNumber}
                 </p>
               </div>
               <button
                 onClick={() => setIsPayOpen(false)}
-                className="text-slate-400 hover:text-slate-600 font-bold text-lg"
+                className="text-ink-faint hover:text-ink-soft font-medium text-lg"
               >
                 ✕
               </button>
@@ -838,7 +825,7 @@ export default function AccountsDashboard() {
             {payStep === 1 && (
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <label className="block text-xs font-bold text-[#0b192c] uppercase tracking-wider">
+                  <label className="block text-xs font-medium text-ink uppercase tracking-wider">
                     1. Select Fee Category (Check at least one option) *
                   </label>
 
@@ -847,17 +834,17 @@ export default function AccountsDashboard() {
                       <label
                         key={catKey}
                         onClick={() => handleCategoryToggle(catKey)}
-                        className={`flex items-center space-x-2.5 p-3 rounded-2xl border cursor-pointer transition-all ${
+                        className={`flex items-center space-x-2.5 p-3 border cursor-pointer transition-all ${
                           selectedCategories[catKey]
-                            ? 'bg-teal-50 border-[#0d9488] text-[#0d9488] font-bold shadow-sm'
-                            : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+                            ? 'bg-copy-wash border-copy text-copy font-medium'
+                            : 'bg-paper border-rule text-ink hover:bg-manila/30'
                         }`}
                       >
                         <input
                           type="checkbox"
                           checked={selectedCategories[catKey]}
                           onChange={() => {}}
-                          className="w-4 h-4 rounded text-[#0d9488] focus:ring-[#0d9488]"
+                          className="w-4 h-4 rounded text-copy focus:ring-copy"
                         />
                         <span className="text-xs">{catKey}</span>
                       </label>
@@ -867,8 +854,8 @@ export default function AccountsDashboard() {
 
                 {/* Text Box appears ONLY after selecting a category */}
                 {hasSelectedCategory ? (
-                  <div className="space-y-3 bg-teal-50/60 border border-teal-200 p-4 rounded-2xl">
-                    <label className="block text-xs font-bold text-[#0b192c]">
+                  <div className="space-y-3 bg-copy-wash/60 border border-copy/25 p-4">
+                    <label className="block text-xs font-medium text-ink">
                       2. Enter Payment Amount for ({selectedCategoryList.join(', ')}) *
                     </label>
                     <input
@@ -877,22 +864,22 @@ export default function AccountsDashboard() {
                       value={payAmount}
                       onChange={(e) => setPayAmount(e.target.value)}
                       placeholder="e.g. 15000"
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-bold text-[#0b192c] focus:ring-2 focus:ring-[#0d9488] focus:outline-none"
+                      className="w-full px-4 py-2.5 border border-rule bg-sheet text-sm font-medium text-ink focus:ring-2 focus:ring-copy focus:outline-none"
                     />
 
                     <button
                       type="button"
                       disabled={!payAmount || parseFloat(payAmount) <= 0}
                       onClick={() => setPayStep(2)}
-                      className="w-full bg-[#0d9488] hover:bg-[#0f766e] text-white font-bold py-2.5 rounded-xl text-xs shadow-md transition-all cursor-pointer flex items-center justify-center space-x-2 disabled:opacity-50"
+                      className="w-full bg-copy hover:bg-copy-deep text-white font-medium py-2.5 text-xs transition-all cursor-pointer flex items-center justify-center space-x-2 disabled:opacity-50"
                     >
-                      <span>Continue to Payment QR & UTR Entry</span>
+                      <span>Continue to payment</span>
                       <ArrowRight className="w-4 h-4" />
                     </button>
                   </div>
                 ) : (
-                  <div className="text-xs text-amber-800 bg-amber-50 border border-amber-200 p-3 rounded-xl flex items-center space-x-2">
-                    <Info className="w-4 h-4 text-amber-600 shrink-0" />
+                  <div className="text-xs text-hold bg-hold-wash border border-hold/25 p-3 flex items-center space-x-2">
+                    <Info className="w-4 h-4 text-hold shrink-0" />
                     <span>Please select at least one fee category above to reveal the amount entry box.</span>
                   </div>
                 )}
@@ -902,22 +889,22 @@ export default function AccountsDashboard() {
             {/* STEP 2: QR CODE DISPLAY & UTR TRANSACTION ID ENTRY */}
             {payStep === 2 && (
               <form onSubmit={handleSubmitPayment} className="space-y-4">
-                <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl text-center space-y-3">
-                  <div className="text-xs font-bold text-slate-700">Scan QR Code to Pay Fee via UPI</div>
+                <div className="bg-paper border border-rule p-4 text-center space-y-3">
+                  <div className="text-xs font-medium text-ink">Scan QR Code to Pay Fee via UPI</div>
                   <div className="flex justify-center py-2">
                     {/* Visual Payment QR Code Placeholder */}
-                    <div className="w-40 h-40 bg-white border-2 border-[#0b192c] p-2 rounded-2xl shadow-inner flex flex-col items-center justify-center text-center space-y-1">
-                      <QrCode className="w-24 h-24 text-[#0b192c]" />
-                      <span className="text-[10px] font-mono font-bold text-[#0d9488]">UPI ID: school@upi</span>
+                    <div className="w-40 h-40 bg-sheet border-2 border-ink p-2 flex flex-col items-center justify-center text-center space-y-1">
+                      <QrCode className="w-24 h-24 text-ink" />
+                      <span className="text-[10px] font-mono font-medium text-copy">UPI ID: school@upi</span>
                     </div>
                   </div>
-                  <div className="text-xs text-slate-600 font-semibold">
-                    Amount to Pay: <strong className="text-[#0d9488] font-extrabold text-sm">Rs. {parseFloat(payAmount || '0').toLocaleString('en-IN')}</strong> ({selectedCategoryList.join(', ')})
+                  <div className="text-xs text-ink-soft font-semibold">
+                    Amount to Pay: <strong className="text-copy font-semibold text-sm">Rs. {parseFloat(payAmount || '0').toLocaleString('en-IN')}</strong> ({selectedCategoryList.join(', ')})
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <label className="block text-xs font-bold text-[#0b192c]">
+                  <label className="block text-xs font-medium text-ink">
                     Enter Transaction ID / UTR No. *
                   </label>
                   <input
@@ -926,9 +913,9 @@ export default function AccountsDashboard() {
                     value={utrNumber}
                     onChange={(e) => setUtrNumber(e.target.value)}
                     placeholder="e.g. 123456789012"
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white font-mono text-sm font-bold text-[#0b192c] focus:ring-2 focus:ring-[#0d9488] focus:outline-none"
+                    className="w-full px-4 py-2.5 border border-rule bg-sheet font-mono text-sm font-medium text-ink focus:ring-2 focus:ring-copy focus:outline-none"
                   />
-                  <p className="text-[10px] text-slate-500">
+                  <p className="text-[10px] text-ink-soft">
                     The Done button will be enabled only after you enter the Transaction ID / UTR No.
                   </p>
                 </div>
@@ -937,7 +924,7 @@ export default function AccountsDashboard() {
                   <button
                     type="button"
                     onClick={() => setPayStep(1)}
-                    className="bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-bold px-4 py-2.5 rounded-xl"
+                    className="bg-manila/50 hover:bg-manila text-ink text-xs font-medium px-4 py-2.5"
                   >
                     ← Back
                   </button>
@@ -946,14 +933,14 @@ export default function AccountsDashboard() {
                   <button
                     type="submit"
                     disabled={!utrNumber.trim() || submittingPayment}
-                    className="flex-1 bg-[#0b192c] hover:bg-[#1e3e62] text-white font-bold py-2.5 rounded-xl text-xs shadow-md transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                    className="flex-1 bg-ink hover:bg-copy-deep text-white font-medium py-2.5 text-xs transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
                   >
                     {submittingPayment ? (
                       <span>Submitting Invoice...</span>
                     ) : (
                       <>
-                        <CheckCircle className="w-4 h-4 text-teal-400" />
-                        <span>Done (Generate & Submit Invoice)</span>
+                        <CheckCircle className="w-4 h-4 text-copy" />
+                        <span>Generate invoice</span>
                       </>
                     )}
                   </button>
