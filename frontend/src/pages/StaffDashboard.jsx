@@ -483,7 +483,7 @@ export default function StaffDashboard() {
 
                     {/* Class Teacher Assignment Details - Showcase ONLY if assigned */}
                     {isClassTeacher ? (
-                      <div className="bg-copy-wash border border-copy/25 p-3.5 text-teal-900 font-medium space-y-1">
+                      <div className="bg-copy-wash border border-copy/25 p-3.5 text-copy-deep font-medium space-y-1">
                         <div className="font-medium text-xs uppercase tracking-wider text-copy">
                           Class Teacher Assignment:
                         </div>
@@ -871,7 +871,7 @@ export default function StaffDashboard() {
                   <span
                     className={`text-xs font-semibold px-3 py-1.5 uppercase ${
                       latestLeaveStatus === 'APPROVED'
-                        ? 'bg-paid-wash text-paid border border-teal-300'
+                        ? 'bg-paid-wash text-paid border border-copy/40'
                         : latestLeaveStatus === 'REJECTED'
                         ? 'bg-due-wash text-due border border-rose-300'
                         : latestLeaveStatus === 'PENDING'

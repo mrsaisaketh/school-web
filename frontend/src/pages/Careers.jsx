@@ -137,7 +137,7 @@ export default function Careers() {
                   <h3 className="text-base font-medium text-ink">Apply for {selectedJob.title}</h3>
 
                   {submitted ? (
-                    <div className="bg-copy-wash border border-copy/25 text-teal-900 p-4 text-center space-y-2">
+                    <div className="bg-copy-wash border border-copy/25 text-copy-deep p-4 text-center space-y-2">
                       <CheckCircle className="w-8 h-8 text-copy mx-auto" />
                       <p className="font-medium text-sm">Application Submitted!</p>
                       <p className="text-xs text-copy-deep">Thank you for applying. Our HR team will review your application.</p>

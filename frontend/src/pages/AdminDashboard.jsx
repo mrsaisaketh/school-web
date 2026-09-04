@@ -566,7 +566,7 @@ export default function AdminDashboard() {
 
               {/* Form Container */}
               <form onSubmit={handleSaveStudent} className="bg-paper p-5 border border-rule space-y-4">
-                <div className="flex items-center space-x-2 text-xs text-teal-900 bg-copy-wash border border-copy/25 p-3 font-medium">
+                <div className="flex items-center space-x-2 text-xs text-copy-deep bg-copy-wash border border-copy/25 p-3 font-medium">
                   <Info className="w-4 h-4 text-copy shrink-0" />
                   <span>
                     <strong>Student Login Notice:</strong> Students log in using their <strong>Student Code / ID</strong> (e.g. <code>STU_1001</code>) and password set as their <strong>DOB</strong> in <code>DD/MM/YYYY</code> format. No email required!
@@ -1204,14 +1204,14 @@ export default function AdminDashboard() {
                       </p>
                     </div>
 
-                    <div className="flex items-center space-x-4 bg-ink p-4 border border-teal-500/30">
+                    <div className="flex items-center space-x-4 bg-ink p-4 border border-copy/30">
                       <div className="text-center">
                         <div className="text-[10px] text-copy uppercase font-medium">Overall Attendance</div>
                         <div className="text-2xl font-semibold text-copy">
                           {studentAttendanceData?.startToDateStats?.overallPercentage || 100}%
                         </div>
                       </div>
-                      <div className="h-8 w-px bg-slate-600"></div>
+                      <div className="h-8 w-px bg-white/25"></div>
                       <div className="text-center">
                         <div className="text-[10px] text-copy uppercase font-medium">Session Working Days</div>
                         <div className="text-2xl font-semibold text-white">

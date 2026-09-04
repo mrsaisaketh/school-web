@@ -228,7 +228,7 @@ export default function UserDashboard() {
                     </p>
                   </div>
 
-                  <div className="bg-ink p-4 border border-teal-500/30 text-right">
+                  <div className="bg-ink p-4 border border-copy/30 text-right">
                     <div className="text-[10px] text-white/60 font-medium uppercase">Date of birth</div>
                     <div className="text-lg font-mono font-semibold text-copy mt-0.5">
                       {dobFormatted}
@@ -743,7 +743,7 @@ export default function UserDashboard() {
               </div>
 
               <div className="text-right">
-                <span className="bg-copy-wash text-teal-900 font-semibold text-xs px-3 py-1 uppercase border border-teal-300 inline-block">
+                <span className="bg-copy-wash text-copy-deep font-semibold text-xs px-3 py-1 uppercase border border-copy/40 inline-block">
                   ✓ APPROVED & VERIFIED
                 </span>
                 <div className="text-xs font-mono font-medium text-copy mt-2">

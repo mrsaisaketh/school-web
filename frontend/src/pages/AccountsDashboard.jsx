@@ -412,7 +412,7 @@ export default function AccountsDashboard() {
                   <div className="space-y-6">
                     <div className="bg-ink text-white p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                       <div>
-                        <span className="bg-teal-900 text-copy text-[10px] font-mono font-medium px-2.5 py-1 uppercase">
+                        <span className="bg-copy-deep text-copy text-[10px] font-mono font-medium px-2.5 py-1 uppercase">
                           Emp Code: {teacherDetails.employeeCode}
                         </span>
                         <h3 className="text-xl font-semibold text-white mt-1.5">{teacherDetails.name}</h3>
@@ -421,7 +421,7 @@ export default function AccountsDashboard() {
                         </p>
                       </div>
 
-                      <div className="flex items-center space-x-4 bg-ink p-4 border border-teal-500/30">
+                      <div className="flex items-center space-x-4 bg-ink p-4 border border-copy/30">
                         <div className="text-center">
                           <div className="text-[10px] text-white/60 font-medium uppercase">Net Salary</div>
                           <div className="text-2xl font-semibold text-copy">
