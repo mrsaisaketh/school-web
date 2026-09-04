@@ -1,7 +1,8 @@
 import { PrismaClient } from '@prisma/client';
 
-// On Vercel each warm lambda re-imports this module; without the global cache
-// every invocation would open a fresh pool and exhaust Postgres connections.
+// A single client per process. Module scope already gives us one instance per
+// warm lambda; the globalThis cache additionally survives `node --watch`
+// reloads in development, which would otherwise leak a pool on every restart.
 const globalForPrisma = globalThis;
 
 export const db =
@@ -10,4 +11,4 @@ export const db =
     log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
   });
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.__prisma = db;
+globalForPrisma.__prisma = db;

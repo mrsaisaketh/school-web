@@ -1,0 +1,9 @@
+# Never ship local secrets into the deployment source.
+.env
+.env.*
+!.env.example
+
+node_modules
+frontend/dist
+backend/prisma/dev.db
+.claude
