@@ -3,18 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "comment": "Runtime dependencies live in the root package.json so that the Vercel /api function and this package resolve one identical copy of @prisma/client.",
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
     "db:seed": "node prisma/seed.js"
-  },
-  "dependencies": {
-    "@prisma/client": "^5.22.0",
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.7",
-    "express": "^4.21.2"
-  },
-  "devDependencies": {
-    "prisma": "^5.22.0"
   }
 }

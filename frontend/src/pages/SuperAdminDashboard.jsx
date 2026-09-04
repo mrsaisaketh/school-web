@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { api, getUser } from '../lib/api';
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 import {
@@ -67,24 +68,20 @@ export default function SuperAdminDashboard() {
   const [loadingApplications, setLoadingApplications] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem('erp_user');
-    if (saved) {
-      try {
-        setCurrentUser(JSON.parse(saved));
-      } catch (e) {}
-    }
+    const saved = getUser();
+    if (saved) setCurrentUser(saved);
   }, []);
 
   const fetchDashboardData = () => {
     setLoading(true);
     Promise.all([
-      fetch('/api/reports').then((r) => r.json()),
-      fetch('/api/students?limit=100').then((r) => r.json()),
-      fetch('/api/staff').then((r) => r.json()),
-      fetch('/api/invoices').then((r) => r.json()),
-      fetch('/api/leave').then((r) => r.json()),
-      fetch('/api/work-updates').then((r) => r.json()),
-      fetch('/api/careers?all=true').then((r) => r.json()),
+      api('/api/reports').then((r) => r.json()),
+      api('/api/students?limit=100').then((r) => r.json()),
+      api('/api/staff').then((r) => r.json()),
+      api('/api/invoices').then((r) => r.json()),
+      api('/api/leave').then((r) => r.json()),
+      api('/api/work-updates').then((r) => r.json()),
+      api('/api/careers?all=true').then((r) => r.json()),
     ])
       .then(([repRes, stuRes, stfRes, invRes, leaveRes, workRes, carRes]) => {
         if (repRes.metrics) setMetrics(repRes.metrics);
@@ -110,7 +107,7 @@ export default function SuperAdminDashboard() {
       return;
     }
     setLoadingAttendance(true);
-    fetch(`/api/attendance?studentId=${stId}`)
+    api(`/api/attendance?studentId=${stId}`)
       .then((r) => r.json())
       .then((res) => {
         setStudentAttendanceRecord(res);
@@ -131,7 +128,7 @@ export default function SuperAdminDashboard() {
 
   const handleLeaveDecision = async (leaveRequestId, decisionStatus) => {
     try {
-      const res = await fetch('/api/leave', {
+      const res = await api('/api/leave', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -154,7 +151,7 @@ export default function SuperAdminDashboard() {
   const handlePostJob = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('/api/careers', {
+      const res = await api('/api/careers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -188,7 +185,7 @@ export default function SuperAdminDashboard() {
 
   const handleTogglePublishJob = async (id, isPublished) => {
     try {
-      const res = await fetch('/api/careers', {
+      const res = await api('/api/careers', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -222,7 +219,7 @@ export default function SuperAdminDashboard() {
       return;
     }
     try {
-      const res = await fetch('/api/careers', {
+      const res = await api('/api/careers', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -264,7 +261,7 @@ export default function SuperAdminDashboard() {
       return;
     }
     setLoadingApplications(true);
-    fetch(`/api/careers?jobOpeningId=${jobId}`)
+    api(`/api/careers?jobOpeningId=${jobId}`)
       .then((r) => r.json())
       .then((res) => {
         if (res.applications) setFifoApplications(res.applications);

@@ -2,12 +2,19 @@ import express from 'express';
 import { db } from '../lib/db.js';
 import { emailService } from '../lib/email.js';
 import { logAuditEvent } from '../lib/audit.js';
+import { requireAuth, optionalAuth, ADMINS } from '../lib/auth.js';
 
 const router = express.Router();
 
-router.get('/', async (req, res) => {
+router.get('/', optionalAuth, async (req, res) => {
   try {
     const { all, jobOpeningId } = req.query;
+    const isAdmin = req.user && ADMINS.includes(req.user.role);
+
+    // Applicant records and the unpublished-job list contain PII / internal data.
+    if ((jobOpeningId || all === 'true') && !isAdmin) {
+      return res.status(403).json({ error: 'You do not have permission to view applications.' });
+    }
 
     if (jobOpeningId) {
       const applications = await db.careerApplication.findMany({
@@ -39,12 +46,16 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.post('/', async (req, res) => {
+router.post('/', optionalAuth, async (req, res) => {
   try {
     const body = req.body;
 
     if (body.action === 'CREATE_JOB') {
-      const { title, department, description, requirements, experience, salaryRange, deadline, userRole, profileId } = body;
+      if (!req.user || !ADMINS.includes(req.user.role)) {
+        return res.status(403).json({ error: 'You do not have permission to create job openings.' });
+      }
+      const { title, department, description, requirements, experience, salaryRange, deadline } = body;
+      const { profileId, role: userRole } = req.user;
       if (!title || !department || !description) {
         return res.status(400).json({ error: 'Job title, department, and description are required' });
       }
@@ -70,7 +81,7 @@ router.post('/', async (req, res) => {
 
       await logAuditEvent({
         profileId,
-        userRole: userRole || 'SUPER_ADMIN',
+        userRole,
         action: 'JOB_OPENING_CREATE',
         entity: 'JobOpening',
         entityId: job.id,
@@ -83,6 +94,13 @@ router.post('/', async (req, res) => {
 
     if (!jobOpeningId || !applicantName || !email || !phone) {
       return res.status(400).json({ error: 'Required applicant fields missing' });
+    }
+
+    const openJob = await db.jobOpening.findFirst({
+      where: { id: String(jobOpeningId), isPublished: true, status: 'OPEN' },
+    });
+    if (!openJob) {
+      return res.status(400).json({ error: 'This job opening is not accepting applications.' });
     }
 
     const application = await db.careerApplication.create({
@@ -120,13 +138,10 @@ router.post('/', async (req, res) => {
   }
 });
 
-router.patch('/', async (req, res) => {
+router.patch('/', requireAuth('SUPER_ADMIN'), async (req, res) => {
   try {
-    const { action, id, isPublished, customFields, userRole, profileId } = req.body;
-
-    if (userRole !== 'SUPER_ADMIN') {
-      return res.status(403).json({ error: 'Unauthorized: Only SUPER_ADMIN can modify jobs' });
-    }
+    const { action, id, isPublished, customFields } = req.body;
+    const { profileId, role: userRole } = req.user;
 
     if (action === 'TOGGLE_PUBLISH') {
       const updated = await db.jobOpening.update({

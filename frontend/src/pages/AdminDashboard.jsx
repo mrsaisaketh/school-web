@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { api, getUser } from '../lib/api';
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 import {
@@ -82,23 +83,19 @@ export default function AdminDashboard() {
   const [adminLeaveReason, setAdminLeaveReason] = useState('');
 
   useEffect(() => {
-    const saved = localStorage.getItem('erp_user');
-    if (saved) {
-      try {
-        setCurrentUser(JSON.parse(saved));
-      } catch (e) {}
-    }
+    const saved = getUser();
+    if (saved) setCurrentUser(saved);
   }, []);
 
   const loadData = () => {
     setLoading(true);
     Promise.all([
-      fetch('/api/students').then((r) => r.json()),
-      fetch('/api/staff').then((r) => r.json()),
-      fetch('/api/invoices').then((r) => r.json()),
-      fetch('/api/academic/setup').then((r) => r.json()),
-      fetch('/api/work-updates').then((r) => r.json()),
-      fetch('/api/leave').then((r) => r.json()),
+      api('/api/students').then((r) => r.json()),
+      api('/api/staff').then((r) => r.json()),
+      api('/api/invoices').then((r) => r.json()),
+      api('/api/academic/setup').then((r) => r.json()),
+      api('/api/work-updates').then((r) => r.json()),
+      api('/api/leave').then((r) => r.json()),
     ])
       .then(([stuRes, stfRes, invRes, acadRes, workRes, leaveRes]) => {
         if (stuRes.students) setStudents(stuRes.students);
@@ -120,7 +117,7 @@ export default function AdminDashboard() {
   const fetchStudentAttendanceAnalytics = (student) => {
     setSelectedStudentForAttendance(student);
     setLoadingAttendance(true);
-    fetch(`/api/attendance?studentId=${student.id}`)
+    api(`/api/attendance?studentId=${student.id}`)
       .then((r) => r.json())
       .then((data) => {
         setStudentAttendanceData(data);
@@ -187,7 +184,7 @@ export default function AdminDashboard() {
   const handleDeleteStudent = async (id) => {
     if (!confirm('Are you sure you want to delete this student record? Their login profile will also be removed.')) return;
     try {
-      const res = await fetch(`/api/students/${id}`, {
+      const res = await api(`/api/students/${id}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userRole: 'ADMIN', profileId: currentUser?.id }),
@@ -272,7 +269,7 @@ export default function AdminDashboard() {
   const handleDeleteStaff = async (id) => {
     if (!confirm('Are you sure you want to delete this staff member? Their login account will be permanently removed.')) return;
     try {
-      const res = await fetch(`/api/staff/${id}`, {
+      const res = await api(`/api/staff/${id}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userRole: 'ADMIN', profileId: currentUser?.id }),
@@ -306,7 +303,7 @@ export default function AdminDashboard() {
       return;
     }
     try {
-      const res = await fetch('/api/academic/assign-teacher', {
+      const res = await api('/api/academic/assign-teacher', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -330,7 +327,7 @@ export default function AdminDashboard() {
 
   const handleGrantAttendancePermission = async (staffId, classId, sectionId) => {
     try {
-      const res = await fetch('/api/academic/grant-permission', {
+      const res = await api('/api/academic/grant-permission', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -356,7 +353,7 @@ export default function AdminDashboard() {
   const handlePostAdminWorkLog = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('/api/work-updates', {
+      const res = await api('/api/work-updates', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -385,7 +382,7 @@ export default function AdminDashboard() {
       return;
     }
     try {
-      const res = await fetch('/api/leave', {
+      const res = await api('/api/leave', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -410,7 +407,7 @@ export default function AdminDashboard() {
 
   const handleLeaveDecision = async (leaveRequestId, decisionStatus) => {
     try {
-      const res = await fetch('/api/leave', {
+      const res = await api('/api/leave', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

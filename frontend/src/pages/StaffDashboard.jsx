@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { api, getUser } from '../lib/api';
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 import {
@@ -58,22 +59,18 @@ export default function StaffDashboard() {
   const [leaveReason, setLeaveReason] = useState('');
 
   useEffect(() => {
-    const saved = localStorage.getItem('erp_user');
-    if (saved) {
-      try {
-        setCurrentUser(JSON.parse(saved));
-      } catch (e) {}
-    }
+    const saved = getUser();
+    if (saved) setCurrentUser(saved);
   }, []);
 
   const loadData = () => {
     setLoading(true);
     Promise.all([
-      fetch('/api/staff').then((r) => r.json()),
-      fetch('/api/students').then((r) => r.json()),
-      fetch('/api/academic/setup').then((r) => r.json()),
-      fetch('/api/work-updates').then((r) => r.json()),
-      fetch(`/api/leave?email=${encodeURIComponent(currentUser?.email || '')}`).then((r) => r.json()),
+      api('/api/staff').then((r) => r.json()),
+      api('/api/students').then((r) => r.json()),
+      api('/api/academic/setup').then((r) => r.json()),
+      api('/api/work-updates').then((r) => r.json()),
+      api(`/api/leave?email=${encodeURIComponent(currentUser?.email || '')}`).then((r) => r.json()),
     ])
       .then(([stfRes, stuRes, acadRes, workRes, leaveRes]) => {
         if (stfRes.staffMembers && currentUser) {
@@ -111,7 +108,7 @@ export default function StaffDashboard() {
   // Load Previous Day Absent Students for Class Teacher
   useEffect(() => {
     if (isClassTeacher) {
-      fetch(`/api/attendance?classId=${assignedClassId}&sectionId=${assignedSectionId}`)
+      api(`/api/attendance?classId=${assignedClassId}&sectionId=${assignedSectionId}`)
         .then((r) => r.json())
         .then((d) => {
           if (d.attendances) {
@@ -147,7 +144,7 @@ export default function StaffDashboard() {
     }
     try {
       setPostingWork(true);
-      const res = await fetch('/api/work-updates', {
+      const res = await api('/api/work-updates', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -181,7 +178,7 @@ export default function StaffDashboard() {
     }
     try {
       setChangingPassword(true);
-      const res = await fetch('/api/auth/change-password', {
+      const res = await api('/api/auth/change-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -234,7 +231,7 @@ export default function StaffDashboard() {
         remarks: absentStudentIds[st.id] ? 'Marked Absent by Class Teacher' : 'Regular Attendance',
       }));
 
-      const res = await fetch('/api/attendance', {
+      const res = await api('/api/attendance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -276,7 +273,7 @@ export default function StaffDashboard() {
       return;
     }
     try {
-      const res = await fetch('/api/leave', {
+      const res = await api('/api/leave', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

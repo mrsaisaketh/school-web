@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { api, getUser } from '../lib/api';
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 import {
@@ -56,21 +57,17 @@ export default function AccountsDashboard() {
   const [submittingPayment, setSubmittingPayment] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem('erp_user');
-    if (saved) {
-      try {
-        setCurrentUser(JSON.parse(saved));
-      } catch (e) {}
-    }
+    const saved = getUser();
+    if (saved) setCurrentUser(saved);
   }, []);
 
   const loadData = () => {
     setLoading(true);
     Promise.all([
-      fetch('/api/invoices').then((r) => r.json()),
-      fetch('/api/students').then((r) => r.json()),
-      fetch('/api/staff').then((r) => r.json()),
-      fetch('/api/academic/setup').then((r) => r.json()),
+      api('/api/invoices').then((r) => r.json()),
+      api('/api/students').then((r) => r.json()),
+      api('/api/staff').then((r) => r.json()),
+      api('/api/academic/setup').then((r) => r.json()),
     ])
       .then(([invRes, stuRes, stfRes, acadRes]) => {
         if (invRes.invoices) setInvoices(invRes.invoices);
@@ -195,7 +192,7 @@ export default function AccountsDashboard() {
     }
     try {
       setSubmittingPayment(true);
-      const res = await fetch('/api/invoices/pay', {
+      const res = await api('/api/invoices/pay', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -230,7 +227,7 @@ export default function AccountsDashboard() {
   const handleApproveInvoice = async (invoiceId) => {
     if (!confirm('Approve this invoice and verify payment? Balance will update immediately across Accounts & Student portal.')) return;
     try {
-      const res = await fetch(`/api/invoices/${invoiceId}/approve`, {
+      const res = await api(`/api/invoices/${invoiceId}/approve`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'APPROVED', userRole: 'ACCOUNTS', profileId: currentUser?.id }),
@@ -249,7 +246,7 @@ export default function AccountsDashboard() {
   const handleRejectInvoice = async (invoiceId) => {
     if (!confirm('Are you sure you want to reject and cancel this invoice?')) return;
     try {
-      const res = await fetch(`/api/invoices/${invoiceId}/approve`, {
+      const res = await api(`/api/invoices/${invoiceId}/approve`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'REJECTED', userRole: 'ACCOUNTS', profileId: currentUser?.id }),

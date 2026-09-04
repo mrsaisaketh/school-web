@@ -1,6 +1,18 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
+import dotenv from 'dotenv';
+
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
+
+// Resolve .env from the repo root regardless of the process cwd.
+dotenv.config({ path: path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../.env') });
 
 const prisma = new PrismaClient();
+
+// Staff/admin seed password. Override with SEED_PASSWORD in any shared environment.
+const SEED_PASSWORD = process.env.SEED_PASSWORD || 'password123';
+const hash = (plain) => bcrypt.hash(String(plain), 10);
 
 async function main() {
   console.log('Seeding rich static data for ALL ROLES (SUPER_ADMIN, ADMIN, ACCOUNTS, STAFF)...');
@@ -131,7 +143,7 @@ async function main() {
       id: 'prof_superadmin',
       schoolId: school.id,
       email: 'superadmin@school.com',
-      password: 'password123',
+      password: await hash(SEED_PASSWORD),
       fullName: 'Super Admin',
       role: 'SUPER_ADMIN',
       phone: '+91 99999 11111',
@@ -144,7 +156,7 @@ async function main() {
       id: 'prof_admin',
       schoolId: school.id,
       email: 'admin@school.com',
-      password: 'password123',
+      password: await hash(SEED_PASSWORD),
       fullName: 'School Administrator',
       role: 'ADMIN',
       phone: '+91 99999 22222',
@@ -157,7 +169,7 @@ async function main() {
       id: 'prof_accounts',
       schoolId: school.id,
       email: 'accounts@school.com',
-      password: 'password123',
+      password: await hash(SEED_PASSWORD),
       fullName: 'Accounts Bursar',
       role: 'ACCOUNTS',
       phone: '+91 99999 33333',
@@ -170,7 +182,6 @@ async function main() {
     {
       id: 'prof_staff_main',
       email: 'staff@school.com',
-      password: 'password123',
       fullName: 'Faculty Teacher',
       empCode: 'EMP_1001',
       designation: 'Senior Physics PGT Teacher',
@@ -180,7 +191,6 @@ async function main() {
     {
       id: 'prof_staff_ramesh',
       email: 'ramesh@school.com',
-      password: 'password123',
       fullName: 'Dr. Ramesh Kumar',
       empCode: 'EMP_1002',
       designation: 'Physics PGT Teacher',
@@ -190,7 +200,6 @@ async function main() {
     {
       id: 'prof_staff_sunita',
       email: 'sunita@school.com',
-      password: 'password123',
       fullName: 'Sunita Rao',
       empCode: 'EMP_1003',
       designation: 'Mathematics PGT Teacher',
@@ -200,7 +209,6 @@ async function main() {
     {
       id: 'prof_staff_anand',
       email: 'anand@school.com',
-      password: 'password123',
       fullName: 'Anand Verma',
       empCode: 'EMP_1004',
       designation: 'Chemistry PGT Teacher',
@@ -210,7 +218,6 @@ async function main() {
     {
       id: 'prof_staff_priya',
       email: 'priya@school.com',
-      password: 'password123',
       fullName: 'Priya Sharma',
       empCode: 'EMP_1005',
       designation: 'Biology PGT Teacher',
@@ -226,7 +233,7 @@ async function main() {
         id: sp.id,
         schoolId: school.id,
         email: sp.email,
-        password: sp.password,
+        password: await hash(SEED_PASSWORD),
         fullName: sp.fullName,
         role: 'STAFF',
         phone: '+91 98765 00000',
@@ -291,7 +298,7 @@ async function main() {
       data: {
         schoolId: school.id,
         email: `${stData.code.toLowerCase()}@school.com`,
-        password: '15/08/2010', // DOB format DD/MM/YYYY
+        password: await hash('15/08/2010'), // login password is DOB, DD/MM/YYYY
         fullName: stData.name,
         role: 'USER',
         phone: stData.phone,

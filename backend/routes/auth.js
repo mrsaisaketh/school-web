@@ -1,6 +1,7 @@
 import express from 'express';
 import { db } from '../lib/db.js';
 import { logAuditEvent } from '../lib/audit.js';
+import { hashPassword, verifyPassword, signToken, requireAuth } from '../lib/auth.js';
 
 const router = express.Router();
 
@@ -24,21 +25,17 @@ router.post('/login', async (req, res) => {
           { student: { studentCode: inputIdentifier.toUpperCase() } },
         ],
       },
-      include: {
-        school: true,
-        student: true,
-        staff: true,
-      },
+      include: { school: true, student: true, staff: true },
     });
 
-    if (!profile) {
-      return res.status(401).json({ error: 'Invalid Student ID / Email or user not found' });
-    }
+    // Same message for "no such user" and "wrong password" so the endpoint
+    // cannot be used to enumerate which accounts exist.
+    const INVALID = 'Invalid credentials. Students: your password is your DOB in DD/MM/YYYY format.';
 
-    if (profile.password !== password) {
-      return res.status(401).json({ error: 'Invalid password. Note for students: Password is your DOB in DD/MM/YYYY format.' });
+    if (!profile) return res.status(401).json({ error: INVALID });
+    if (!(await verifyPassword(password, profile.password))) {
+      return res.status(401).json({ error: INVALID });
     }
-
     if (profile.status !== 'ACTIVE') {
       return res.status(403).json({ error: 'Account is deactivated. Contact administration.' });
     }
@@ -49,10 +46,12 @@ router.post('/login', async (req, res) => {
       action: 'USER_LOGIN',
       entity: 'Profile',
       entityId: profile.id,
+      ipAddress: req.ip,
     });
 
     return res.json({
       success: true,
+      token: signToken(profile),
       user: {
         id: profile.id,
         email: profile.email,
@@ -69,25 +68,50 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// CHANGE PASSWORD ENDPOINT
-router.post('/change-password', async (req, res) => {
-  try {
-    const { profileId, oldPassword, newPassword } = req.body;
+// Confirms the stored token is still valid — used by the frontend route guards.
+router.get('/me', requireAuth(), async (req, res) => {
+  const profile = await db.profile.findUnique({
+    where: { id: req.user.profileId },
+    include: { student: true, staff: true },
+  });
+  if (!profile || profile.status !== 'ACTIVE') {
+    return res.status(401).json({ error: 'Account is no longer active' });
+  }
+  return res.json({
+    user: {
+      id: profile.id,
+      email: profile.email,
+      fullName: profile.fullName,
+      role: profile.role,
+      schoolId: profile.schoolId,
+      studentId: profile.student?.id || null,
+      staffId: profile.staff?.id || null,
+    },
+  });
+});
 
-    if (!profileId || !oldPassword || !newPassword) {
+// CHANGE PASSWORD — always acts on the caller's own profile, taken from the token.
+router.post('/change-password', requireAuth(), async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+
+    if (!oldPassword || !newPassword) {
       return res.status(400).json({ error: 'Current password and new password are required.' });
     }
+    if (String(newPassword).length < 8) {
+      return res.status(400).json({ error: 'New password must be at least 8 characters.' });
+    }
 
-    const profile = await db.profile.findUnique({ where: { id: profileId } });
+    const profile = await db.profile.findUnique({ where: { id: req.user.profileId } });
     if (!profile) return res.status(404).json({ error: 'Profile not found.' });
 
-    if (profile.password !== oldPassword) {
+    if (!(await verifyPassword(oldPassword, profile.password))) {
       return res.status(400).json({ error: 'Current password does not match.' });
     }
 
     await db.profile.update({
-      where: { id: profileId },
-      data: { password: newPassword },
+      where: { id: profile.id },
+      data: { password: await hashPassword(newPassword) },
     });
 
     await logAuditEvent({
@@ -96,6 +120,7 @@ router.post('/change-password', async (req, res) => {
       action: 'PASSWORD_CHANGE',
       entity: 'Profile',
       entityId: profile.id,
+      ipAddress: req.ip,
     });
 
     return res.json({ success: true, message: 'Password updated successfully!' });

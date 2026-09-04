@@ -1,12 +1,16 @@
 // Prisma schema for Production-Level School Management ERP
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  // "native" for local dev; the rhel target is what Vercel's Node runtime needs.
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  // Migrations must bypass the connection pooler; runtime traffic goes through it.
+  directUrl = env("DIRECT_URL")
 }
 
 model School {

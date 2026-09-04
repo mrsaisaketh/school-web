@@ -1,12 +1,13 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { School, User, LogOut } from 'lucide-react';
+import { clearSession } from '../lib/api';
 
 export default function Header({ userRole, userName }) {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.removeItem('erp_user');
+    clearSession();
     navigate('/login');
   };
 

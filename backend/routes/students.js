@@ -1,6 +1,7 @@
 import express from 'express';
 import { db } from '../lib/db.js';
 import { logAuditEvent } from '../lib/audit.js';
+import { requireAuth, hashPassword, ADMINS, INTERNAL } from '../lib/auth.js';
 
 const router = express.Router();
 
@@ -17,13 +18,21 @@ function formatDobToDDMMYYYY(dobInput) {
 }
 
 // GET STUDENT PROFILE FOR LOGGED IN USER
-router.get('/me', async (req, res) => {
+router.get('/me', requireAuth(), async (req, res) => {
   try {
-    const { profileId, studentCode, email } = req.query;
+    const { studentCode, email } = req.query;
     const where = {};
-    if (profileId) where.profileId = String(profileId);
-    else if (studentCode) where.studentCode = String(studentCode);
-    else if (email) where.profile = { email: String(email).toLowerCase() };
+
+    if (req.user.role === 'USER') {
+      // Ignore any lookup params a student supplies — they get their own record only.
+      where.profileId = req.user.profileId;
+    } else if (studentCode) {
+      where.studentCode = String(studentCode);
+    } else if (email) {
+      where.profile = { email: String(email).toLowerCase() };
+    } else {
+      return res.status(400).json({ error: 'Provide studentCode or email to look up a student' });
+    }
 
     let student = await db.student.findFirst({
       where,
@@ -34,15 +43,7 @@ router.get('/me', async (req, res) => {
       },
     });
 
-    if (!student) {
-      student = await db.student.findFirst({
-        include: {
-          profile: true,
-          parents: { include: { parent: true } },
-          enrollments: { include: { class: true, section: true } },
-        },
-      });
-    }
+    if (!student) return res.status(404).json({ error: 'Student record not found' });
 
     return res.json({ student });
   } catch (error) {
@@ -52,7 +53,7 @@ router.get('/me', async (req, res) => {
 });
 
 // GET ALL STUDENTS
-router.get('/', async (req, res) => {
+router.get('/', requireAuth(...INTERNAL), async (req, res) => {
   try {
     const { search, classId, sectionId, status, limit = 100 } = req.query;
 
@@ -98,9 +99,10 @@ router.get('/', async (req, res) => {
 });
 
 // CREATE STUDENT (USER LOGIN CREDENTIALS = STUDENT CODE & DOB in DD/MM/YYYY)
-router.post('/', async (req, res) => {
+router.post('/', requireAuth(...ADMINS), async (req, res) => {
   try {
-    const { fullName, studentCode, rollNumber, dob, parentName, parentPhone, aadharNumber, classId, sectionId, userRole, profileId } = req.body;
+    const { fullName, studentCode, rollNumber, dob, parentName, parentPhone, aadharNumber, classId, sectionId } = req.body;
+    const { profileId, role: userRole } = req.user;
 
     if (!fullName) {
       return res.status(400).json({ error: 'Student full name is required' });
@@ -120,7 +122,7 @@ router.post('/', async (req, res) => {
       data: {
         schoolId: school.id,
         email: studentProfileEmail,
-        password: formattedPasswordDOB,
+        password: await hashPassword(formattedPasswordDOB),
         fullName,
         phone: parentPhone || aadharNumber || null,
         role: 'USER',
@@ -205,10 +207,11 @@ router.post('/', async (req, res) => {
 });
 
 // EDIT STUDENT
-router.put('/:id', async (req, res) => {
+router.put('/:id', requireAuth(...ADMINS), async (req, res) => {
   try {
     const { id } = req.params;
-    const { fullName, studentCode, rollNumber, dob, parentName, parentPhone, classId, sectionId, userRole, profileId } = req.body;
+    const { fullName, studentCode, rollNumber, dob, parentName, parentPhone, classId, sectionId } = req.body;
+    const { profileId, role: userRole } = req.user;
 
     const student = await db.student.findUnique({
       where: { id },
@@ -227,7 +230,7 @@ router.put('/:id', async (req, res) => {
           ...(fullName && { fullName }),
           ...(parentPhone && { phone: parentPhone }),
           ...(studentCode && { email: `${studentCode.toLowerCase()}@school.com` }),
-          ...(formattedPasswordDOB && { password: formattedPasswordDOB }),
+          ...(formattedPasswordDOB && { password: await hashPassword(formattedPasswordDOB) }),
         },
       });
     }
@@ -282,10 +285,10 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE STUDENT
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', requireAuth(...ADMINS), async (req, res) => {
   try {
     const { id } = req.params;
-    const { userRole, profileId } = req.body || {};
+    const { profileId, role: userRole } = req.user;
 
     const student = await db.student.findUnique({ where: { id } });
     if (!student) return res.status(404).json({ error: 'Student record not found' });

@@ -2,44 +2,40 @@ import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Header from '../components/Header';
 import { School, Shield, ArrowRight, Lock, UserCheck, Mail } from 'lucide-react';
+import { setSession } from '../lib/api';
 
 export default function Login() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const initialRole = searchParams.get('role') || 'SUPER_ADMIN';
 
-  const [email, setEmail] = useState('superadmin@school.com');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [role, setRole] = useState(initialRole);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleRoleSelect = (r) => {
     setRole(r);
+    setPassword('');
     switch (r) {
       case 'SUPER_ADMIN':
         setEmail('superadmin@school.com');
-        setPassword('password123');
         break;
       case 'ADMIN':
         setEmail('admin@school.com');
-        setPassword('password123');
         break;
       case 'ACCOUNTS':
         setEmail('accounts@school.com');
-        setPassword('password123');
         break;
       case 'STAFF':
         setEmail('staff@school.com');
-        setPassword('password123');
         break;
       case 'USER':
         setEmail('STU_1001');
-        setPassword('15/08/2010');
         break;
       default:
         setEmail('');
-        setPassword('');
     }
   };
 
@@ -58,8 +54,8 @@ export default function Login() {
       const data = await res.json();
       setLoading(false);
 
-      if (res.ok && data.user) {
-        localStorage.setItem('erp_user', JSON.stringify(data.user));
+      if (res.ok && data.user && data.token) {
+        setSession(data.token, data.user);
         switch (data.user.role) {
           case 'SUPER_ADMIN':
             navigate('/dashboard/super-admin');

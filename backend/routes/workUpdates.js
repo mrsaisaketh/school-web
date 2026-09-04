@@ -1,11 +1,18 @@
 import express from 'express';
 import { db } from '../lib/db.js';
+import { requireAuth, ADMINS } from '../lib/auth.js';
 
 const router = express.Router();
 
-router.get('/', async (req, res) => {
+router.get('/', requireAuth(), async (req, res) => {
   try {
-    const { staffId, date: dateStr } = req.query;
+    const { date: dateStr } = req.query;
+    // Staff read their own updates only; admins may filter or read all.
+    const staffId = req.user.role === 'STAFF' ? req.user.staffId : req.query.staffId;
+
+    if (!ADMINS.includes(req.user.role) && req.user.role !== 'STAFF') {
+      return res.status(403).json({ error: 'You do not have permission to view work updates.' });
+    }
 
     const where = {};
     if (staffId) where.staffId = String(staffId);
@@ -37,9 +44,10 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.post('/', async (req, res) => {
+router.post('/', requireAuth('SUPER_ADMIN', 'ADMIN', 'STAFF'), async (req, res) => {
   try {
-    const { staffId, workSummary, department, hoursWorked, date: dateStr } = req.body;
+    const { workSummary, department, hoursWorked, date: dateStr } = req.body;
+    const staffId = req.user.role === 'STAFF' ? req.user.staffId : req.body.staffId;
 
     if (!staffId || !workSummary) {
       return res.status(400).json({ error: 'Work summary and staff ID are required' });

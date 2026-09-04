@@ -1,16 +1,20 @@
 import express from 'express';
 import { db } from '../lib/db.js';
 import { logAuditEvent } from '../lib/audit.js';
+import { requireAuth, FINANCE } from '../lib/auth.js';
 
 const router = express.Router();
 
 // GET INVOICES & PAYMENTS HISTORY
-router.get('/', async (req, res) => {
+router.get('/', requireAuth(), async (req, res) => {
   try {
-    const { studentId, status, search = '' } = req.query;
+    const { status, search = '' } = req.query;
+    // Students see only their own invoices, whatever they pass.
+    const studentId = req.user.role === 'USER' ? req.user.studentId : req.query.studentId;
 
     const where = {};
     if (studentId) where.studentId = String(studentId);
+    else if (req.user.role === 'USER') return res.json({ invoices: [], paymentsHistory: [], monthlySummary: [] });
     if (status) where.status = String(status);
 
     if (search) {
@@ -41,7 +45,7 @@ router.get('/', async (req, res) => {
     });
 
     const allVerifiedPayments = await db.payment.findMany({
-      where: { status: 'VERIFIED' },
+      where: { status: 'VERIFIED', ...(studentId && req.user.role === 'USER' ? { studentId: String(studentId) } : {}) },
       include: {
         invoice: true,
         student: { include: { profile: true, enrollments: { include: { class: true, section: true } } } },
@@ -65,9 +69,12 @@ router.get('/', async (req, res) => {
 });
 
 // CREATE / SUBMIT NEW FEE INVOICE & PAYMENT FOR APPROVAL
-router.post('/pay', async (req, res) => {
+router.post('/pay', requireAuth(), async (req, res) => {
   try {
-    const { studentId, feeCategories, amount, transactionId, utrNumber, paymentMethod, userRole, profileId } = req.body;
+    const { feeCategories, amount, transactionId, utrNumber, paymentMethod } = req.body;
+    const { profileId, role: userRole } = req.user;
+    // A student can only pay against their own account.
+    const studentId = userRole === 'USER' ? req.user.studentId : req.body.studentId;
 
     if (!studentId || !amount) {
       return res.status(400).json({ error: 'Student and payment amount are required.' });
@@ -151,10 +158,11 @@ router.post('/pay', async (req, res) => {
 });
 
 // APPROVE OR REJECT GENERATED INVOICE
-router.put('/:id/approve', async (req, res) => {
+router.put('/:id/approve', requireAuth(...FINANCE), async (req, res) => {
   try {
     const { id } = req.params;
-    const { status, userRole, profileId } = req.body; // status: 'APPROVED' or 'REJECTED'
+    const { status } = req.body; // status: 'APPROVED' or 'REJECTED'
+    const { profileId, role: userRole } = req.user;
 
     const invoice = await db.invoice.findUnique({
       where: { id },
@@ -236,9 +244,10 @@ router.put('/:id/approve', async (req, res) => {
 });
 
 // CREATE CUSTOM MANUAL INVOICE
-router.post('/', async (req, res) => {
+router.post('/', requireAuth(...FINANCE), async (req, res) => {
   try {
-    const { studentId, feeCategory, subtotal, discount, lateFee, dueDate, userRole, profileId } = req.body;
+    const { studentId, feeCategory, subtotal, discount, lateFee, dueDate } = req.body;
+    const { profileId, role: userRole } = req.user;
 
     let activeYear = await db.academicYear.findFirst({ where: { isActive: true } });
     if (!activeYear) {

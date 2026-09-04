@@ -1,9 +1,10 @@
 import express from 'express';
 import { db } from '../lib/db.js';
+import { requireAuth, FINANCE } from '../lib/auth.js';
 
 const router = express.Router();
 
-router.get('/', async (req, res) => {
+router.get('/', requireAuth(...FINANCE), async (req, res) => {
   try {
     const totalStudents = await db.student.count();
     const activeStudents = await db.student.count({ where: { status: 'ACTIVE' } });

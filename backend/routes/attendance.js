@@ -1,12 +1,19 @@
 import express from 'express';
 import { db } from '../lib/db.js';
 import { logAuditEvent } from '../lib/audit.js';
+import { requireAuth } from '../lib/auth.js';
 
 const router = express.Router();
 
-router.get('/', async (req, res) => {
+router.get('/', requireAuth(), async (req, res) => {
   try {
-    const { classId, sectionId, studentId, date: dateStr } = req.query;
+    const { classId, sectionId, date: dateStr } = req.query;
+    // A student may only ever read their own attendance; ignore the query param.
+    const studentId = req.user.role === 'USER' ? req.user.studentId : req.query.studentId;
+
+    if (req.user.role === 'USER' && !studentId) {
+      return res.status(404).json({ error: 'No student record linked to this account' });
+    }
 
     const where = {};
 
@@ -125,9 +132,11 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.post('/', async (req, res) => {
+router.post('/', requireAuth('SUPER_ADMIN', 'ADMIN', 'STAFF'), async (req, res) => {
   try {
-    const { classId, sectionId, date: dateStr, records, staffId, userRole, profileId } = req.body;
+    const { classId, sectionId, date: dateStr, records } = req.body;
+    const { profileId, role: userRole } = req.user;
+    const staffId = req.user.staffId;
 
     if (!classId || !sectionId || !records || !Array.isArray(records)) {
       return res.status(400).json({ error: 'Invalid attendance submission format' });

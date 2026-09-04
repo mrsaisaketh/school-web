@@ -2,22 +2,23 @@ import express from 'express';
 import { db } from '../lib/db.js';
 import { emailService } from '../lib/email.js';
 import { logAuditEvent } from '../lib/audit.js';
+import { requireAuth, ADMINS } from '../lib/auth.js';
 
 const router = express.Router();
 
-router.get('/', async (req, res) => {
+router.get('/', requireAuth(), async (req, res) => {
   try {
-    const { staffId, profileId, email } = req.query;
     const where = {};
 
-    let targetStaffId = staffId;
-    if (!targetStaffId && profileId) {
-      const stf = await db.staff.findUnique({ where: { profileId: String(profileId) } });
-      if (stf) targetStaffId = stf.id;
-    }
-    if (!targetStaffId && email) {
-      const stf = await db.staff.findFirst({ where: { profile: { email: String(email).toLowerCase() } } });
-      if (stf) targetStaffId = stf.id;
+    // Staff see only their own requests. Admins may filter, or see everything.
+    let targetStaffId = null;
+    if (req.user.role === 'STAFF') {
+      targetStaffId = req.user.staffId;
+      if (!targetStaffId) return res.json({ leaveRequests: [] });
+    } else if (ADMINS.includes(req.user.role)) {
+      targetStaffId = req.query.staffId || null;
+    } else {
+      return res.status(403).json({ error: 'You do not have permission to view leave requests.' });
     }
 
     if (targetStaffId) where.staffId = String(targetStaffId);
@@ -38,34 +39,20 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.post('/', async (req, res) => {
+router.post('/', requireAuth('SUPER_ADMIN', 'ADMIN', 'STAFF'), async (req, res) => {
   try {
-    const { staffId, profileId, email, startDate, endDate, reason, leaveTypeId } = req.body;
+    const { startDate, endDate, reason, leaveTypeId } = req.body;
 
     if (!startDate || !endDate || !reason) {
       return res.status(400).json({ error: 'Please enter start date, end date, and reason for leave.' });
     }
 
-    // Resolve staffId if not directly passed
-    let targetStaffId = staffId;
-
-    if (!targetStaffId && profileId) {
-      const stf = await db.staff.findUnique({ where: { profileId: String(profileId) } });
-      if (stf) targetStaffId = stf.id;
-    }
-
-    if (!targetStaffId && email) {
-      const stf = await db.staff.findFirst({ where: { profile: { email: String(email).toLowerCase() } } });
-      if (stf) targetStaffId = stf.id;
-    }
+    // Staff file for themselves; an admin may file on a named staff member's behalf.
+    // No "fall back to the first staff row" — that silently filed under a stranger.
+    const targetStaffId = req.user.role === 'STAFF' ? req.user.staffId : req.body.staffId;
 
     if (!targetStaffId) {
-      const fallbackStaff = await db.staff.findFirst();
-      if (fallbackStaff) targetStaffId = fallbackStaff.id;
-    }
-
-    if (!targetStaffId) {
-      return res.status(400).json({ error: 'Staff member profile not found for leave request.' });
+      return res.status(400).json({ error: 'No staff record linked to this request.' });
     }
 
     const start = new Date(startDate);
@@ -103,13 +90,10 @@ router.post('/', async (req, res) => {
   }
 });
 
-router.put('/', async (req, res) => {
+router.put('/', requireAuth(...ADMINS), async (req, res) => {
   try {
-    const { leaveRequestId, status, reviewNotes, userRole, profileId } = req.body;
-
-    if (!['SUPER_ADMIN', 'ADMIN'].includes(userRole)) {
-      return res.status(403).json({ error: 'Unauthorized to review leave requests' });
-    }
+    const { leaveRequestId, status, reviewNotes } = req.body;
+    const { profileId, role: userRole } = req.user;
 
     const updated = await db.leaveRequest.update({
       where: { id: leaveRequestId },

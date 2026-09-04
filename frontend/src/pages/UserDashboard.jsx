@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { api, getUser } from '../lib/api';
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 import {
@@ -48,12 +49,8 @@ export default function UserDashboard() {
   const [selectedInvoiceForCopy, setSelectedInvoiceForCopy] = useState(null);
 
   useEffect(() => {
-    const saved = localStorage.getItem('erp_user');
-    if (saved) {
-      try {
-        setCurrentUser(JSON.parse(saved));
-      } catch (e) {}
-    }
+    const saved = getUser();
+    if (saved) setCurrentUser(saved);
   }, []);
 
   const loadStudentData = () => {
@@ -64,13 +61,13 @@ export default function UserDashboard() {
       ? `studentCode=${currentUser.studentId}`
       : `email=${encodeURIComponent(currentUser.email)}`;
 
-    fetch(`/api/students/me?${query}`)
+    api(`/api/students/me?${query}`)
       .then((r) => r.json())
       .then((data) => {
         if (data.student) {
           setStudentRecord(data.student);
           // Fetch student attendance
-          fetch(`/api/attendance?studentId=${data.student.id}`)
+          api(`/api/attendance?studentId=${data.student.id}`)
             .then((r) => r.json())
             .then((attRes) => {
               if (attRes.attendances) setAttendances(attRes.attendances);
@@ -78,7 +75,7 @@ export default function UserDashboard() {
             .catch(() => {});
 
           // Fetch student invoices & payments
-          fetch(`/api/invoices?studentId=${data.student.id}`)
+          api(`/api/invoices?studentId=${data.student.id}`)
             .then((r) => r.json())
             .then((invRes) => {
               if (invRes.invoices) setInvoices(invRes.invoices);
@@ -162,7 +159,7 @@ export default function UserDashboard() {
 
     try {
       setSubmittingPayment(true);
-      const res = await fetch('/api/invoices/pay', {
+      const res = await api('/api/invoices/pay', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

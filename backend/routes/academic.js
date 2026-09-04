@@ -1,11 +1,12 @@
 import express from 'express';
 import { db } from '../lib/db.js';
 import { logAuditEvent } from '../lib/audit.js';
+import { requireAuth, ADMINS, INTERNAL } from '../lib/auth.js';
 
 const router = express.Router();
 
 // GET ACADEMIC SETUP DATA
-router.get('/setup', async (req, res) => {
+router.get('/setup', requireAuth(...INTERNAL), async (req, res) => {
   try {
     const school = await db.school.findFirst();
     if (!school) return res.status(400).json({ error: 'School not found' });
@@ -71,9 +72,10 @@ router.get('/setup', async (req, res) => {
 });
 
 // ALLOCATE CLASS / SUBJECT TEACHER
-router.post('/assign-teacher', async (req, res) => {
+router.post('/assign-teacher', requireAuth(...ADMINS), async (req, res) => {
   try {
-    const { staffId, classId, sectionId, roleType = 'CLASS_TEACHER', userRole, profileId } = req.body;
+    const { staffId, classId, sectionId, roleType = 'CLASS_TEACHER' } = req.body;
+    const { profileId, role: userRole } = req.user;
 
     if (!staffId || !classId || !sectionId) {
       return res.status(400).json({ error: 'Staff, class, and section IDs are required' });
@@ -132,9 +134,10 @@ router.post('/assign-teacher', async (req, res) => {
 });
 
 // GRANT ATTENDANCE ACCESS PERMISSION
-router.post('/grant-permission', async (req, res) => {
+router.post('/grant-permission', requireAuth(...ADMINS), async (req, res) => {
   try {
-    const { staffId, classId, sectionId, hoursValid = 24, userRole, profileId } = req.body;
+    const { staffId, classId, sectionId, hoursValid = 24 } = req.body;
+    const { profileId, role: userRole } = req.user;
 
     if (!staffId || !classId || !sectionId) {
       return res.status(400).json({ error: 'Staff, class, and section are required' });

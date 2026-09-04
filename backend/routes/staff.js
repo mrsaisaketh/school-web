@@ -1,11 +1,12 @@
 import express from 'express';
 import { db } from '../lib/db.js';
 import { logAuditEvent } from '../lib/audit.js';
+import { requireAuth, hashPassword, ADMINS, INTERNAL } from '../lib/auth.js';
 
 const router = express.Router();
 
 // GET STAFF
-router.get('/', async (req, res) => {
+router.get('/', requireAuth(...INTERNAL), async (req, res) => {
   try {
     const staffMembers = await db.staff.findMany({
       include: {
@@ -24,9 +25,10 @@ router.get('/', async (req, res) => {
 });
 
 // CREATE STAFF
-router.post('/', async (req, res) => {
+router.post('/', requireAuth(...ADMINS), async (req, res) => {
   try {
-    const { fullName, email, password, employeeCode, designation, subject, departmentId, qualification, baseSalary, userRole, profileId } = req.body;
+    const { fullName, email, password, employeeCode, designation, subject, departmentId, qualification, baseSalary } = req.body;
+    const { profileId, role: userRole } = req.user;
 
     if (!fullName || !email) {
       return res.status(400).json({ error: 'Staff name and login email ID are required' });
@@ -57,7 +59,7 @@ router.post('/', async (req, res) => {
       data: {
         schoolId: school.id,
         email: email.toLowerCase().trim(),
-        password: password || 'password123',
+        password: await hashPassword(password || 'password123'),
         fullName,
         role: 'STAFF',
         status: 'ACTIVE',
@@ -98,10 +100,11 @@ router.post('/', async (req, res) => {
 });
 
 // EDIT STAFF
-router.put('/:id', async (req, res) => {
+router.put('/:id', requireAuth(...ADMINS), async (req, res) => {
   try {
     const { id } = req.params;
-    const { fullName, email, password, employeeCode, designation, subject, baseSalary, userRole, profileId } = req.body;
+    const { fullName, email, password, employeeCode, designation, subject, baseSalary } = req.body;
+    const { profileId, role: userRole } = req.user;
 
     const staff = await db.staff.findUnique({
       where: { id },
@@ -117,7 +120,7 @@ router.put('/:id', async (req, res) => {
         data: {
           ...(fullName && { fullName }),
           ...(email && { email: email.toLowerCase().trim() }),
-          ...(password && { password }),
+          ...(password && { password: await hashPassword(password) }),
         },
       });
     }
@@ -153,10 +156,10 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE STAFF
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', requireAuth(...ADMINS), async (req, res) => {
   try {
     const { id } = req.params;
-    const { userRole, profileId } = req.body || {};
+    const { profileId, role: userRole } = req.user;
 
     const staff = await db.staff.findUnique({ where: { id } });
     if (!staff) return res.status(404).json({ error: 'Staff member not found' });

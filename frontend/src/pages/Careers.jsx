@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { api } from '../lib/api';
 import Header from '../components/Header';
 import { Briefcase, Calendar, MapPin, DollarSign, Send, CheckCircle } from 'lucide-react';
 
@@ -17,7 +18,7 @@ export default function Careers() {
   const [customAnswers, setCustomAnswers] = useState({});
 
   useEffect(() => {
-    fetch('/api/careers')
+    api('/api/careers')
       .then((res) => res.json())
       .then((data) => {
         if (data.jobOpenings) setJobOpenings(data.jobOpenings);
@@ -36,7 +37,7 @@ export default function Careers() {
     if (!selectedJob) return;
 
     try {
-      const res = await fetch('/api/careers', {
+      const res = await api('/api/careers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
