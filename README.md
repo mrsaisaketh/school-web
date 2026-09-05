@@ -47,6 +47,21 @@ after which the endpoint answers 429 with `Retry-After`. Failures are recorded a
 `LOGIN_FAILED` rows in `AuditLog`, so the count is shared by every API instance and
 the attempts are auditable. See `backend/lib/rateLimit.js`.
 
+## What is and is not here
+
+Implemented and exercised end to end: role-based sign-in; student admission and
+DOB-based first password; class teacher assignment; attendance marking and the
+student's own attendance view; staff work logs; leave requests and approval;
+student fee submission, the accounts approval queue and the collection metric;
+job openings, public applications and unpublishing; a public homepage read from
+the database; an audit log, which also backs the sign-in rate limit.
+
+Not implemented, and not pretended to be: email (`backend/lib/email.js` logs to
+the console), payment gateways (payments are manual UPI references verified by
+Accounts), PDF receipts, a CMS for the homepage (`SiteSetting` and
+`LandingSection` exist in the schema but are unused), payroll, and file uploads
+for resumes or documents.
+
 ## Local setup
 
 ```bash

@@ -11,7 +11,10 @@
     "build:frontend": "npm run build --prefix frontend",
     "db:push": "prisma db push --schema=backend/prisma/schema.prisma",
     "db:seed": "node backend/prisma/seed.js",
-    "vercel-build": "prisma generate --schema=backend/prisma/schema.prisma && npm run build --prefix frontend"
+    "vercel-build": "prisma generate --schema=backend/prisma/schema.prisma && npm run build --prefix frontend",
+    "test:e2e": "node scripts/e2e.mjs",
+    "scan:sast": "semgrep scan --metrics=off --config p/owasp-top-ten --config p/nodejs --config p/react --config p/javascript --config p/secrets --exclude node_modules --exclude dist backend frontend/src api",
+    "scan:dast": "docker run --rm -t ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t ${SCAN_URL:-https://school-erp-two-sage.vercel.app} -I"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
