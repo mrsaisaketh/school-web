@@ -29,9 +29,10 @@ const app = express();
 // Behind Vercel's proxy, so req.ip reflects the caller rather than the edge.
 app.set('trust proxy', 1);
 
-// The SPA is served from the same origin in production, so CORS is only needed
-// for the local split-port dev setup.
-app.use(cors({ origin: process.env.CORS_ORIGIN || true }));
+// The SPA is same-origin in production and reaches the API through the vite
+// proxy in development, so CORS is off unless a separate origin is configured.
+// Reflecting any Origin, the previous default, was flagged by the ZAP baseline.
+if (process.env.CORS_ORIGIN) app.use(cors({ origin: process.env.CORS_ORIGIN }));
 app.use(express.json({ limit: '1mb' }));
 
 app.use('/api/auth', authRouter);
