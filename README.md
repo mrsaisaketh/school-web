@@ -43,8 +43,9 @@ details, classes, subjects, faculty by name and designation only), `GET /api/car
 applicants or unpublished jobs requires an admin.
 
 Sign-in is rate limited: 8 failed attempts per IP and identifier in 15 minutes,
-after which the endpoint answers 429 with `Retry-After`. The table is in-memory
-per instance (see `backend/lib/rateLimit.js` for the ceiling and upgrade path).
+after which the endpoint answers 429 with `Retry-After`. Failures are recorded as
+`LOGIN_FAILED` rows in `AuditLog`, so the count is shared by every API instance and
+the attempts are auditable. See `backend/lib/rateLimit.js`.
 
 ## Local setup
 

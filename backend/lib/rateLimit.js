@@ -1,51 +1,64 @@
+import { db } from './db.js';
+import { logAuditEvent } from './audit.js';
+
 /**
- * Brute-force protection for sign-in. Counts failed attempts per client IP and
- * identifier inside a sliding window; once the cap is reached, every further
- * attempt in the window — right password or not — is refused with a 429.
+ * Brute-force protection for sign-in, backed by the audit log so that every
+ * instance of the API shares one count. Failed attempts are recorded as
+ * LOGIN_FAILED audit events; the limiter counts those for this client IP and
+ * identifier inside a sliding window and refuses with 429 once the cap is hit.
  *
- * ponytail: in-memory and per-process. On Vercel each warm instance has its own
- * table, so an attacker spread across instances gets somewhat more tries than the
- * cap suggests, and a cold start forgets everything. That still turns an unbounded
- * online guess into a handful per quarter hour per instance. If this matters more,
- * back the table with a shared store (a small Supabase table, or Upstash Redis).
+ * An in-memory table was tried first and did not hold on Vercel: consecutive
+ * requests land on different warm instances, each with its own count, so nine
+ * straight failures never tripped it. Shared state is the only thing that works.
+ *
+ * ponytail: one COUNT on AuditLog per sign-in attempt, unindexed on
+ * (action, ipAddress, entityId, createdAt). Fine at a school's login volume;
+ * add that index if the table grows into millions.
  */
 const WINDOW_MS = 15 * 60 * 1000;
 const MAX_FAILURES = 8;
-const MAX_KEYS = 10_000; // memory ceiling; beyond this we forget everyone.
 
-const failures = new Map(); // key -> [timestamps of failures]
+const identifierOf = (req) => String(req.body?.email ?? '').trim().toLowerCase();
 
-const keyFor = (req) =>
-  `${req.ip}:${String(req.body?.email ?? '').trim().toLowerCase()}`;
-
-function recent(key, now) {
-  const list = (failures.get(key) || []).filter((t) => now - t < WINDOW_MS);
-  if (list.length) failures.set(key, list);
-  else failures.delete(key);
-  return list;
-}
-
-export function loginLimiter(req, res, next) {
-  const now = Date.now();
-  const list = recent(keyFor(req), now);
-  if (list.length >= MAX_FAILURES) {
-    const retryAfter = Math.ceil((list[0] + WINDOW_MS - now) / 1000);
-    res.set('Retry-After', String(retryAfter));
-    return res.status(429).json({
-      error: `Too many sign-in attempts. Try again in ${Math.ceil(retryAfter / 60)} minutes.`,
+export async function loginLimiter(req, res, next) {
+  try {
+    const since = new Date(Date.now() - WINDOW_MS);
+    const count = await db.auditLog.count({
+      where: {
+        action: 'LOGIN_FAILED',
+        ipAddress: req.ip,
+        entityId: identifierOf(req),
+        createdAt: { gte: since },
+      },
     });
+
+    if (count >= MAX_FAILURES) {
+      const oldest = await db.auditLog.findFirst({
+        where: { action: 'LOGIN_FAILED', ipAddress: req.ip, entityId: identifierOf(req), createdAt: { gte: since } },
+        orderBy: { createdAt: 'asc' },
+        select: { createdAt: true },
+      });
+      const retryAfter = Math.max(60, Math.ceil((oldest.createdAt.getTime() + WINDOW_MS - Date.now()) / 1000));
+      res.set('Retry-After', String(retryAfter));
+      return res.status(429).json({
+        error: `Too many sign-in attempts. Try again in ${Math.ceil(retryAfter / 60)} minutes.`,
+      });
+    }
+  } catch (error) {
+    // A limiter outage must not lock everyone out. Let the attempt through, loudly.
+    console.error('Login limiter unavailable, allowing attempt:', error);
   }
   next();
 }
 
+/* For a failed sign-in there is no profile to point at, so entityId carries the
+   identifier that was tried. The password is never recorded. */
 export function recordFailure(req) {
-  if (failures.size >= MAX_KEYS) failures.clear();
-  const key = keyFor(req);
-  const list = recent(key, Date.now());
-  list.push(Date.now());
-  failures.set(key, list);
-}
-
-export function clearFailures(req) {
-  failures.delete(keyFor(req));
+  return logAuditEvent({
+    userRole: 'ANONYMOUS',
+    action: 'LOGIN_FAILED',
+    entity: 'Profile',
+    entityId: identifierOf(req),
+    ipAddress: req.ip,
+  });
 }
