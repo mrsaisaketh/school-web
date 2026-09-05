@@ -2,10 +2,11 @@ import express from 'express';
 import { db } from '../lib/db.js';
 import { logAuditEvent } from '../lib/audit.js';
 import { hashPassword, verifyPassword, signToken, requireAuth } from '../lib/auth.js';
+import { loginLimiter, recordFailure, clearFailures } from '../lib/rateLimit.js';
 
 const router = express.Router();
 
-router.post('/login', async (req, res) => {
+router.post('/login', loginLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -32,10 +33,11 @@ router.post('/login', async (req, res) => {
     // cannot be used to enumerate which accounts exist.
     const INVALID = 'Invalid credentials. Students: your password is your DOB in DD/MM/YYYY format.';
 
-    if (!profile) return res.status(401).json({ error: INVALID });
-    if (!(await verifyPassword(password, profile.password))) {
+    if (!profile || !(await verifyPassword(password, profile.password))) {
+      recordFailure(req);
       return res.status(401).json({ error: INVALID });
     }
+    clearFailures(req);
     if (profile.status !== 'ACTIVE') {
       return res.status(403).json({ error: 'Account is deactivated. Contact administration.' });
     }

@@ -37,8 +37,14 @@ only, so the serverless function and local dev resolve one identical copy of
 - Role groups: `ADMINS` (SUPER_ADMIN, ADMIN), `FINANCE` (+ACCOUNTS),
   `INTERNAL` (+STAFF).
 
-Public without a token: `GET /api/careers` (published jobs) and `POST /api/careers`
-(submitting an application). Listing applicants or unpublished jobs requires an admin.
+Public without a token: `GET /api/public/site` (what the homepage shows — school
+details, classes, subjects, faculty by name and designation only), `GET /api/careers`
+(published jobs) and `POST /api/careers` (submitting an application). Listing
+applicants or unpublished jobs requires an admin.
+
+Sign-in is rate limited: 8 failed attempts per IP and identifier in 15 minutes,
+after which the endpoint answers 429 with `Retry-After`. The table is in-memory
+per instance (see `backend/lib/rateLimit.js` for the ceiling and upgrade path).
 
 ## Local setup
 
