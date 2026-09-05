@@ -4,12 +4,16 @@ import { logAuditEvent } from './audit.js';
 /**
  * Brute-force protection for sign-in, backed by the audit log so that every
  * instance of the API shares one count. Failed attempts are recorded as
- * LOGIN_FAILED audit events; the limiter counts those for this client IP and
- * identifier inside a sliding window and refuses with 429 once the cap is hit.
+ * LOGIN_FAILED audit events; the limiter counts those for the identifier being
+ * tried inside a sliding window and refuses with 429 once the cap is hit.
  *
- * An in-memory table was tried first and did not hold on Vercel: consecutive
- * requests land on different warm instances, each with its own count, so nine
- * straight failures never tripped it. Shared state is the only thing that works.
+ * The count is keyed on the identifier alone, not IP + identifier. A client's
+ * IP is not stable — in testing, one machine's requests arrived from two
+ * addresses and a per-IP count split 7/3 and never tripped — and an attacker
+ * rotating addresses is the normal case anyway. What is being guessed is the
+ * account, so the account is what gets locked. The IP is still recorded on
+ * each event for the audit trail. Trade-off: anyone can lock an identifier
+ * they know for fifteen minutes by guessing wrong eight times.
  *
  * ponytail: one COUNT on AuditLog per sign-in attempt, unindexed on
  * (action, ipAddress, entityId, createdAt). Fine at a school's login volume;
@@ -26,7 +30,6 @@ export async function loginLimiter(req, res, next) {
     const count = await db.auditLog.count({
       where: {
         action: 'LOGIN_FAILED',
-        ipAddress: req.ip,
         entityId: identifierOf(req),
         createdAt: { gte: since },
       },
@@ -34,7 +37,7 @@ export async function loginLimiter(req, res, next) {
 
     if (count >= MAX_FAILURES) {
       const oldest = await db.auditLog.findFirst({
-        where: { action: 'LOGIN_FAILED', ipAddress: req.ip, entityId: identifierOf(req), createdAt: { gte: since } },
+        where: { action: 'LOGIN_FAILED', entityId: identifierOf(req), createdAt: { gte: since } },
         orderBy: { createdAt: 'asc' },
         select: { createdAt: true },
       });
