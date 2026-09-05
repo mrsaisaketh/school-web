@@ -78,10 +78,24 @@ another port: `PORT=5055 npm run dev:backend`.
 
 ## Deploying
 
-Set `DATABASE_URL`, `DIRECT_URL`, `JWT_SECRET` and `NODE_ENV=production` in the
-Vercel project, then `vercel --prod`. `vercel-build` runs `prisma generate`
+Set `DATABASE_URL`, `DIRECT_URL` and `JWT_SECRET` in the Vercel project, then
+`vercel --prod`. Do not set `NODE_ENV` as a project variable: it also applies at
+build time and makes npm skip devDependencies. `vercel.json` pins the function to
+`bom1` because the database is in ap-south-1 — in the default US region every
+Prisma round trip crossed the planet and dashboards took seven seconds to fill. `vercel-build` runs `prisma generate`
 before the frontend build; `schema.prisma` declares the `rhel-openssl-3.0.x`
 binary target that the Vercel runtime needs.
+
+## Checks
+
+- `npm run test:e2e` — 32-step workflow test across every role against a running
+  API (`B=<api url> SEED_PW=<seed password>`). Cleans up after itself except the
+  job opening it posts, which it reports for deletion.
+- `npm run scan:sast` — semgrep (OWASP Top 10, Node, React, secrets). Zero findings.
+- `npm run scan:dast` — OWASP ZAP baseline against the deployed site (Docker).
+  Last run: 0 fail, 61 pass; remaining warnings are informational caching notes,
+  Vercel's `Access-Control-Allow-Origin: *` on public static assets, and the
+  absence of COEP, which this app deliberately does not set.
 
 ## Database access
 
