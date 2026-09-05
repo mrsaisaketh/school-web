@@ -12,6 +12,7 @@ import workUpdatesRouter from './routes/workUpdates.js';
 import careersRouter from './routes/careers.js';
 import reportsRouter from './routes/reports.js';
 import academicRouter from './routes/academic.js';
+import publicRouter from './routes/public.js';
 
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
@@ -43,6 +44,7 @@ app.use('/api/work-updates', workUpdatesRouter);
 app.use('/api/careers', careersRouter);
 app.use('/api/reports', reportsRouter);
 app.use('/api/academic', academicRouter);
+app.use('/api/public', publicRouter);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date() });

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { setSession } from '../lib/api';
 
 /* Signing in is signing the register at the office door: a ruled line for who
@@ -34,6 +34,7 @@ export default function Login() {
   const [role, setRole] = useState(initialRole);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const desk = DESKS.find((d) => d.id === role) || DESKS[0];
   const isStudent = role === 'USER';
@@ -85,31 +86,31 @@ export default function Login() {
       <div className="mx-auto grid min-h-screen max-w-6xl lg:grid-cols-[1.05fr_1fr]">
         {/* ── Cover of the register ─────────────────────────────────────── */}
         <aside className="relative hidden flex-col justify-between bg-ink px-10 py-10 text-white lg:flex">
-          <div className="flex items-center gap-3">
+          <Link to="/" className="rise flex items-center gap-3" style={{ '--i': 0 }}>
             <span className="grid h-9 w-9 place-items-center border border-manila-deep/60 bg-manila font-mono text-xs font-semibold text-ink">
               SX
             </span>
             <span className="font-mono text-[0.625rem] uppercase tracking-[0.16em] text-white/55">
-              Established 1974
+              Office register
             </span>
-          </div>
+          </Link>
 
           <div>
-            <h1 className="max-w-md font-display text-[2.75rem] font-semibold leading-[1.03] tracking-[-0.015em]">
+            <h1 style={{ '--i': 1 }} className="rise max-w-md font-display text-[2.75rem] font-semibold leading-[1.03] tracking-[-0.015em]">
               St. Xavier
               <br />
               International
               <br />
               School
             </h1>
-            <p className="mt-5 max-w-sm text-sm leading-relaxed text-white/65">
+            <p style={{ '--i': 2 }} className="rise mt-5 max-w-sm text-sm leading-relaxed text-white/65">
               The office register: admissions, attendance, fees and staff records, kept in one
               place for the people who work them daily.
             </p>
           </div>
 
           {/* A date stamp, the way a register page is opened each morning. */}
-          <dl className="flex divide-x divide-white/15 border-t border-white/15 pt-5 font-mono text-[0.625rem] uppercase tracking-wider">
+          <dl style={{ '--i': 3 }} className="rise flex divide-x divide-white/15 border-t border-white/15 pt-5 font-mono text-[0.625rem] uppercase tracking-wider">
             <div className="pr-6">
               <dt className="text-white/45">Register date</dt>
               <dd className="mt-1 text-sm normal-case tracking-normal text-white tnum">{today}</dd>
@@ -124,13 +125,13 @@ export default function Login() {
         {/* ── The sign-in page ──────────────────────────────────────────── */}
         <main className="flex flex-col justify-center px-6 py-12 sm:px-12">
           <div className="mx-auto w-full max-w-sm">
-            <p className="font-mono text-[0.625rem] uppercase tracking-[0.14em] text-ink-faint">
+            <p className="rise font-mono text-[0.625rem] uppercase tracking-[0.14em] text-ink-faint" style={{ '--i': 1 }}>
               Sign the register
             </p>
-            <h2 className="mt-1.5 text-2xl font-bold tracking-tight text-ink">Sign in</h2>
+            <h2 className="rise mt-1.5 text-2xl font-bold tracking-tight text-ink" style={{ '--i': 2 }}>Sign in</h2>
 
             {/* Desk selector. Radios, because it is one choice among five. */}
-            <fieldset className="mt-7">
+            <fieldset className="rise mt-7" style={{ '--i': 3 }}>
               <legend className="font-mono text-[0.625rem] uppercase tracking-wider text-ink-soft">
                 Your desk
               </legend>
@@ -174,7 +175,7 @@ export default function Login() {
               </p>
             )}
 
-            <form onSubmit={handleLogin} className="mt-6 space-y-5">
+            <form onSubmit={handleLogin} className="rise mt-6 space-y-5" style={{ '--i': 4 }}>
               <label className="block">
                 <span className="mb-1 block font-mono text-[0.625rem] uppercase tracking-wider text-ink-soft">
                   {isStudent ? 'Student ID' : 'Email address'}
@@ -194,14 +195,24 @@ export default function Login() {
                 <span className="mb-1 block font-mono text-[0.625rem] uppercase tracking-wider text-ink-soft">
                   Password
                 </span>
-                <input
-                  type="password"
-                  required
-                  autoComplete="current-password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full border-0 border-b border-rule bg-transparent px-0 py-2 font-mono text-sm text-ink placeholder:text-ink-faint focus:border-copy focus:outline-none"
-                />
+                <span className="flex items-center border-b border-rule focus-within:border-copy">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    autoComplete="current-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full border-0 bg-transparent px-0 py-2 font-mono text-sm text-ink placeholder:text-ink-faint focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    className="p-1 text-ink-faint transition-colors hover:text-ink"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </span>
                 {isStudent && (
                   <span className="mt-1.5 block text-[0.6875rem] text-ink-faint">
                     Your date of birth, written as DD/MM/YYYY.
@@ -221,7 +232,7 @@ export default function Login() {
               </button>
             </form>
 
-            <p className="mt-8 border-t border-rule pt-4 text-xs text-ink-soft">
+            <p className="rise mt-8 border-t border-rule pt-4 text-xs text-ink-soft" style={{ '--i': 5 }}>
               Looking for a job at the school?{' '}
               <Link to="/careers" className="text-copy underline decoration-copy/40 underline-offset-2 hover:decoration-copy">
                 See current openings

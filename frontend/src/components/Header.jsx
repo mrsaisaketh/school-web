@@ -26,7 +26,7 @@ export default function Header({ userRole, userName }) {
   return (
     <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-4 border-b border-ink/15 bg-ink px-5 text-white">
       <button
-        onClick={() => navigate(signedIn ? '.' : '/login')}
+        onClick={() => navigate(signedIn ? '.' : '/')}
         className="flex items-center gap-3 text-left"
       >
         {/* The school's initials, set like a stamp on a register cover. */}
